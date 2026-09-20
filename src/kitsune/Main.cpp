@@ -52,8 +52,9 @@ int main(int argc, char** argv) {
 
     CLI12_PARSE(app, argc, argv);
 
+    // The docs says this is fine: https://developer.gnome.org/documentation/tutorials/application-id.html
     auto gui = Gtk::Application::create(
-        "lunarwatcher.kitsune.test"
+        "org.codeberg.lunarwatcher.kitsune"
     );
 
     return gui->make_window_and_run<WindowImpl>(argc, argv);
