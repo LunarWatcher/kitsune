@@ -16,6 +16,19 @@ include_directories(${GTKMM_INCLUDE_DIRS})
 link_directories(${GTKMM_LIBRARY_DIRS})
 
 include(FetchContent)
+FetchContent_Declare(stc
+    GIT_REPOSITORY https://codeberg.org/LunarWatcher/stc
+    GIT_TAG v2026-09-13
+)
+FetchContent_Declare(CLI12
+    GIT_REPOSITORY https://codeberg.org/LunarWatcher/CLI12
+    GIT_TAG v3.1.0
+)
+
+FetchContent_MakeAvailable(
+    stc
+    CLI12
+)
 
 add_subdirectory(src)
 #add_subdirectory(tests)

@@ -1,21 +1,14 @@
-#include "gdkmm/rgba.h"
 #include "gtkmm/application.h"
 #include "gtkmm/widget.h"
 #include "kitsune/gtk/VTEWidget.hpp"
-#include "pango/pango-font.h"
 
 #include <gtkmm.h>
-#include <vte/vte.h>
 
 #include <iostream>
 #include <thread>
 #include <chrono>
 
-static void
-child_ready(VteTerminal *terminal, GPid pid, GError *error, gpointer user_data) {
-    std::cout << "Callback invoked" << std::endl;
-
-}
+#include <CLI/CLI.hpp>
 
 class WindowImpl : public Gtk::Window {
 private:
@@ -52,9 +45,17 @@ public:
 };
 
 int main(int argc, char** argv) {
-    auto app = Gtk::Application::create(
+
+    CLI::App app {
+        "CLI and GUI dev support tool"
+    };
+
+    CLI12_PARSE(app, argc, argv);
+
+    auto gui = Gtk::Application::create(
         "lunarwatcher.kitsune.test"
     );
 
-    return app->make_window_and_run<WindowImpl>(argc, argv);
+    return gui->make_window_and_run<WindowImpl>(argc, argv);
+
 }

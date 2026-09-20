@@ -15,6 +15,9 @@ target_link_libraries(
 PUBLIC
     ${GTKMM_LIBRARIES}
     ${VTE_LIBRARIES}
+
+    stc
+    CLI12::CLI12
 )
 
 target_link_libraries(kitsune kitsunesrc)
