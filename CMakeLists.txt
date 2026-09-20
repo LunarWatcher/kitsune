@@ -15,6 +15,8 @@ pkg_check_modules(VTE vte-2.91-gtk4 REQUIRED)
 include_directories(${GTKMM_INCLUDE_DIRS})
 link_directories(${GTKMM_LIBRARY_DIRS})
 
+include(FetchContent)
+
 add_subdirectory(src)
 #add_subdirectory(tests)
 

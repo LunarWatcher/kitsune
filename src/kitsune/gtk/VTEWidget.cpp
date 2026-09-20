@@ -109,7 +109,7 @@ std::string VTEWidget::getContent() {
     }
 
     std::string str(content);
-    g_free(content);
+    free(content);
 
     return str;
 }
