@@ -1,9 +1,13 @@
 #include "VTEWidget.hpp"
+#include "kitsune/gtk/ColourUtil.hpp"
+#include "kitsune/theming/TermColour.hpp"
 #include <vte/vte.h>
 
 namespace kitsune {
 
-std::expected<std::shared_ptr<VTEWidget>, std::string> VTEWidget::create() {
+std::expected<std::shared_ptr<VTEWidget>, std::string> VTEWidget::create(
+    const Config& conf
+) {
     auto* terminal = vte_terminal_new();
     if (terminal == nullptr) {
         // TODO: can this even happen?
@@ -11,14 +15,14 @@ std::expected<std::shared_ptr<VTEWidget>, std::string> VTEWidget::create() {
     }
 
     return std::shared_ptr<VTEWidget>(
-        new VTEWidget(terminal)
+        new VTEWidget(conf, terminal)
     );
 }
 
-VTEWidget::VTEWidget(GtkWidget* terminal) noexcept : terminal(terminal) {
+VTEWidget::VTEWidget(const Config& conf, GtkWidget* terminal) noexcept : terminal(terminal) {
     this->widget = Glib::wrap(terminal, false);
 
-    applyTheming();
+    applyTheming(conf);
 }
 
 // TODO: I don't _think_ a destructor is necessary for widgets added to the node, but GtkWidget is a bit unclear. Since
@@ -26,45 +30,18 @@ VTEWidget::VTEWidget(GtkWidget* terminal) noexcept : terminal(terminal) {
 // sanity-checked.
 VTEWidget::~VTEWidget() = default;
 
-void VTEWidget::applyTheming() {
-    // TODO: use GdkRGBA directly instead of this
-#define CLR_R(x)   (((x) & 0xff0000) >> 16)
-#define CLR_G(x)   (((x) & 0x00ff00) >>  8)
-#define CLR_B(x)   (((x) & 0x0000ff) >>  0)
-#define CLR_16(x)  ((double)(x) / 0xff)
-#define CLR_GDK(x) (const GdkRGBA){ .red = CLR_16(CLR_R(x)),    \
-                                    .green = CLR_16(CLR_G(x)),  \
-                                    .blue = CLR_16(CLR_B(x)),   \
-                                    .alpha = 0 }
-    auto foreground = CLR_GDK(0x000000);
-    auto background = CLR_GDK(0xffffff);
-    // Export of my current konsole scheme (which itself is an export from a gnome terminal default scheme)
-    std::vector<GdkRGBA> it = {
-        CLR_GDK(0x171421),
-        CLR_GDK(0xc01c28),
-        CLR_GDK(0x26a269),
-        CLR_GDK(0xa2734c),
-        CLR_GDK(0x12488b),
-        CLR_GDK(0xa347ba),
-        CLR_GDK(0x2aa1b3),
-        CLR_GDK(0xd0cfcc),
-        CLR_GDK(0x5e5c64),
-        CLR_GDK(0xf66151),
-        CLR_GDK(0x33d17a),
-        CLR_GDK(0xe9ad0c),
-        CLR_GDK(0x2a7bde),
-        CLR_GDK(0xc061cb),
-        CLR_GDK(0x33c7de),
-        CLR_GDK(0xffffff),
-    };
+void VTEWidget::applyTheming(
+    const Config& conf
+) {
+    const auto& scheme = conf.scheme;
     vte_terminal_set_colors(
         VTE_TERMINAL(terminal),
-        &foreground,
-        &background,
-        it.data(), it.size()
+        &scheme.foreground(),
+        &scheme.background(),
+        scheme.palette().data(), scheme.palette().size()
     );
     auto desc = pango_font_description_from_string(
-        "SauceCodePro Nerd Font 12"
+        scheme.font().c_str()
     );
     vte_terminal_set_font(VTE_TERMINAL(terminal), desc);
 }

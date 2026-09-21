@@ -15,6 +15,7 @@ private:
     Gtk::Frame f;
 
     std::shared_ptr<kitsune::VTEWidget> terminal;
+    kitsune::Config conf;
 public:
     WindowImpl() {
         set_title("*pounces* rawr x3");
@@ -25,7 +26,7 @@ public:
 
         set_child(f);
 
-        auto result = kitsune::VTEWidget::create();
+        auto result = kitsune::VTEWidget::create(conf);
 
         if (result) {
             this->terminal = *result;

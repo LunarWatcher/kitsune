@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gtkmm/widget.h"
-#include "vte/vte.h"
+#include "kitsune/config/Config.hpp"
 #include <expected>
 
 namespace kitsune {
@@ -12,11 +12,15 @@ private:
     GtkWidget* terminal;
     Gtk::Widget* widget;
 
-    VTEWidget(GtkWidget* term) noexcept;
+    VTEWidget(const Config& conf, GtkWidget* term) noexcept;
 
-    void applyTheming();
+    void applyTheming(
+        const Config& scheme
+    );
 public:
-    static std::expected<std::shared_ptr<VTEWidget>, std::string> create();
+    static std::expected<std::shared_ptr<VTEWidget>, std::string> create(
+        const Config& conf
+    );
     ~VTEWidget();
 
     void spawn(const std::vector<std::string>& command);
