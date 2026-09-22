@@ -1,5 +1,9 @@
-add_library(kitsunesrc STATIC 
+add_library(kitsunesrc STATIC
     kitsune/gtk/VTEWidget.cpp
+
+    kitsune/app/KitsuneWindow.cpp
+
+    kitsune/components/TermList.cpp
 )
 add_executable(kitsune kitsune/Main.cpp)
 

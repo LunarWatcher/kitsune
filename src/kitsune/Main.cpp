@@ -1,49 +1,9 @@
 #include "gtkmm/application.h"
-#include "gtkmm/widget.h"
-#include "kitsune/gtk/VTEWidget.hpp"
+#include "kitsune/app/KitsuneWindow.hpp"
 
 #include <gtkmm.h>
 
-#include <iostream>
-#include <thread>
-#include <chrono>
-
 #include <CLI/CLI.hpp>
-
-class WindowImpl : public Gtk::Window {
-private:
-    Gtk::Frame f;
-
-    std::shared_ptr<kitsune::VTEWidget> terminal;
-    kitsune::Config conf;
-public:
-    WindowImpl() {
-        set_title("*pounces* rawr x3");
-        set_default_size(720, 480);
-
-        f.set_margin(10);
-        f.set_label("danger zone");
-
-        set_child(f);
-
-        auto result = kitsune::VTEWidget::create(conf);
-
-        if (result) {
-            this->terminal = *result;
-        } else {
-            throw std::runtime_error(result.error());
-        }
-        f.set_child(*terminal->ptr());
-
-        terminal->spawn({
-            "/usr/bin/bash"
-        });
-        auto t = new std::thread([this]() {
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-            std::cout << "Term content:\n" << terminal->getContent() << std::endl;
-        });
-    }
-};
 
 int main(int argc, char** argv) {
 
@@ -58,6 +18,6 @@ int main(int argc, char** argv) {
         "org.codeberg.lunarwatcher.kitsune"
     );
 
-    return gui->make_window_and_run<WindowImpl>(argc, argv);
+    return gui->make_window_and_run<kitsune::MainWindow>(argc, argv);
 
 }

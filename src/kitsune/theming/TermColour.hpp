@@ -7,8 +7,11 @@
 
 namespace kitsune {
 
+/**
+ * Global placeholder for the theme to hopefully make it easier to add more schemes or custom theme support in the
+ * future if anyone else wants this functionality
+ */
 class TermColour {
-private:
 public:
     TermColour() = default;
 
@@ -16,7 +19,7 @@ public:
         static auto foreground = util::colour(0x000000);
         return foreground;
     }
-    
+
     const GdkRGBA& background() const {
         static auto background = util::colour(0xffffff);
         return background;

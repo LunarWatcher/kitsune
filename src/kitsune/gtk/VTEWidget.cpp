@@ -1,4 +1,5 @@
 #include "VTEWidget.hpp"
+#include "graphene.h"
 #include "kitsune/gtk/ColourUtil.hpp"
 #include "kitsune/theming/TermColour.hpp"
 #include <vte/vte.h>
