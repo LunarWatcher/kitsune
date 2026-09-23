@@ -27,22 +27,24 @@ TermList::TermList()
     this->rootView.signal_activate().connect([this](guint pos) {
         auto it = std::dynamic_pointer_cast<TerminalModel>(selectionModel->get_object(pos));
 
-        std::cout << it.get() << std::endl;
         if (it != nullptr) {
             this->termContainer.set_visible_child(it->page->get_name());
         }
     });
 
-    // This is technically a violation of what signal_bind is supposed to do, but it'll fucking suck if I have to use
-    // both bind and setup
-    factory->signal_bind().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
-        auto data = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item());
-
-        auto label = Gtk::make_managed<Gtk::Label>(data->termName);
-        label->set_wrap(true);
+    factory->signal_setup().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
+        auto label = Gtk::make_managed<Gtk::Label>();
         ptr->set_child(
             *label
         );
+    });
+    factory->signal_bind().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
+        auto data = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item());
+
+        auto* label = (Gtk::Label*) ptr->get_child();
+        label->set_wrap(true);
+        label->set_css_classes({ "menu-row" });
+        label->set_text(data->termName);
     });
 
     this->rootView.set_factory(factory);
