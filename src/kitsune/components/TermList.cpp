@@ -5,7 +5,6 @@
 #include "gtkmm/label.h"
 #include "gtkmm/signallistitemfactory.h"
 #include "kitsune/model/TerminalModel.hpp"
-#include <iostream>
 #include <atomic>
 
 namespace kitsune {
@@ -51,8 +50,19 @@ TermList::TermList()
 
     this->termContainer.set_expand(true);
 
-    this->rootContainer.append(rootView);
-    this->rootContainer.append(termContainer);
+    // Force the terminal to be bigger by default. Not sure how much the values matter
+    this->termContainer.set_size_request(400, -1);
+    this->rootView.set_size_request(100, -1);
+
+    this->rootContainer.set_wide_handle();
+
+    this->rootContainer.set_shrink_start_child(false);
+    this->rootContainer.set_shrink_end_child(false);
+    this->rootContainer.set_resize_start_child(false);
+    this->rootContainer.set_resize_end_child(false);
+
+    this->rootContainer.set_start_child(rootView);
+    this->rootContainer.set_end_child(termContainer);
 }
 
 void TermList::addTerminal(const Config& conf) {
@@ -60,7 +70,7 @@ void TermList::addTerminal(const Config& conf) {
     g_log(nullptr, GLogLevelFlags::G_LOG_LEVEL_INFO, "Adding terminal");
     // To my great annoyance, under GTK4, Glib::RefPtr is literally just an std::shared_ptr
     auto ptr = Glib::make_refptr_for_instance<TerminalModel>(
-        new TerminalModel("Terminal", conf)
+        new TerminalModel("Terminal with a really fucking long name", conf)
     );
     ptr->terminalView->spawn({ "/usr/bin/zsh" });
     ptr->page = this->termContainer.add(*ptr->terminalView->ptr(), std::to_string(++i));

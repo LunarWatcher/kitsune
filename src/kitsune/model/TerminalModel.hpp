@@ -16,7 +16,7 @@ struct TerminalModel : public Glib::Object {
     TerminalModel(
         const Glib::ustring& termName,
         const Config& config
-    ) : termName("Terminal") {
+    ) : termName(termName) {
         auto res = VTEWidget::create(config);
 
         if (res) {

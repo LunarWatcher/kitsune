@@ -1,9 +1,8 @@
 #pragma once
 
 #include "giomm/liststore.h"
-#include "gtkmm/box.h"
-#include "gtkmm/frame.h"
 #include "gtkmm/listview.h"
+#include "gtkmm/paned.h"
 #include "gtkmm/singleselection.h"
 
 #include "gtkmm/stack.h"
@@ -14,7 +13,7 @@ namespace kitsune {
 
 class TermList {
 private:
-    Gtk::Box rootContainer;
+    Gtk::Paned rootContainer;
     Gtk::ListView rootView;
 
     Gtk::Stack termContainer;
