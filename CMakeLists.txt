@@ -25,6 +25,10 @@ FetchContent_Declare(CLI12
     GIT_TAG v3.1.0
 )
 
+find_package(Lua 5.5 REQUIRED)
+string(SUBSTRING ${LUA_VERSION_STRING} 0 3 LUA_BINARY_NAME)
+message(STATUS "Using Lua ${LUA_BINARY_NAME}")
+
 FetchContent_MakeAvailable(
     stc
     CLI12

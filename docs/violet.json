@@ -1,0 +1,17 @@
+{
+  "data": {
+    "language": "en-GB",
+    "repo": {
+      "name": "LunarWatcher/kitsune",
+      "url": "https://codeberg.org/LunarWatcher/kitsune",
+      "license": "Kitsune is licensed under the MIT license. See <a href=\"https://codeberg.org/LunarWatcher/kitsune/src/branch/master/LICENSE\">the LICENSE file</a>"
+    }
+  },
+  "description": "Documentation site for Kitsune, a terminal emulator with a bit of automation",
+  "exclude": [
+    "LICENSE"
+  ],
+  "name": "Kitsune",
+  "prefix": "/kitsune",
+  "theme": "_default"
+}

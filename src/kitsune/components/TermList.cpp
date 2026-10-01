@@ -48,6 +48,7 @@ TermList::TermList()
 
     this->rootView.set_factory(factory);
 
+    this->rootView.set_expand(false);
     this->termContainer.set_expand(true);
 
     // Force the terminal to be bigger by default. Not sure how much the values matter

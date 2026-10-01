@@ -13,6 +13,8 @@ PUBLIC
     ./
     ${GTKMM_INCLUDE_DIRS}
     ${VTE_INCLUDE_DIRS}
+
+    ${LUA_INCLUDE_DIR}
 )
 target_link_libraries(
     kitsunesrc
@@ -22,6 +24,8 @@ PUBLIC
 
     stc
     CLI12::CLI12
+
+    ${LUA_LIBRARIES}
 )
 
 target_link_libraries(kitsune kitsunesrc)
