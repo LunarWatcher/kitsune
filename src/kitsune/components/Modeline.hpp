@@ -19,6 +19,12 @@ private:
     Gtk::Label commandLabel;
     Gtk::Text commandInput;
 
+    Gtk::Label modeLabel;
+
+    void initCSS();
+    void initModeline();
+    void initCommandInput();
+
     std::shared_ptr<ModalInputProcessor> commandInputProcessor;
     Gtk::ApplicationWindow* window;
 public:

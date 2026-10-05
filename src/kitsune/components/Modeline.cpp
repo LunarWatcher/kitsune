@@ -3,12 +3,10 @@
 #include "gtkmm/applicationwindow.h"
 #include "gtkmm/enums.h"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
-#include <iostream>
 
 namespace kitsune {
 
 // TODO: Bug list:
-// * commandInput does not block navigation, or otherwise deactivate command mode
 // * commandInput does not restore focus, and seems to prioritize the VTE widget when using the arrows to get some kind
 //   of focus.
 //   We can get the focus from ApplicationWindow and maybe store that in the modeline, but feels like a nasty hack. Gtk
@@ -35,13 +33,43 @@ Modeline::Modeline(
     ),
     window(window)
 {
+    initCSS();
+    initModeline();
+    initCommandInput();
+
+    container.append(modelineContainer);
+    container.append(commandInputContainer);
+
+}
+
+void Modeline::initCSS() {
     container.add_css_class("modeline-root");
     modelineContainer.add_css_class("modeline-container");
     commandInputContainer.add_css_class("input-container");
+}
 
-    modelineContainer.add_css_class("pad-medium");
-    commandInputContainer.add_css_class("pad-medium");
-    
+void Modeline::initModeline() {
+    modelineContainer.append(modeLabel);
+    modelineContainer.add_css_class("dark");
+
+    modeLabel.set_css_classes({"light-text", "primary"});
+    modeController->signal_mode_changed()
+        .connect([this](Mode mode) {
+            switch (mode) {
+            case Mode::Insert:
+                modeLabel.set_text("Insert");
+                break;
+            case Mode::Normal:
+                modeLabel.set_text("Normal");
+                break;
+            case Mode::Command:
+                modeLabel.set_text("Command");
+                break;
+            }
+        });
+}
+
+void Modeline::initCommandInput() {
     commandInputProcessor->signal_key_pressed().connect(
         [this](guint k, guint, Gdk::ModifierType mod) -> bool {
             // Block arrow key nav (?). In the future, these will navigate an autocomplete dropdown instead, maybe
@@ -62,27 +90,26 @@ Modeline::Modeline(
     commandInput.signal_activate().connect([this]() {
         // activate means enter is pressed (in Gtk::Text anyway)
         auto text = commandInput.get_text();
-        std::cout << "Exec " << text << std::endl;
 
         this->modeController->setMode(Mode::Normal);
     });
     commandInput.set_expand(true);
 
-    commandInput.signal_state_flags_changed().connect([this](Gtk::StateFlags flags) {
-        // TODO: I think we can use this to address bug 1, but I don't entirely understand how. I think I can
-        // if ((flags & Gtk::StateFlags::FOCUSED) == 0)
-        // (or possibly using bitwise NOT, I'm not sure)
-        // to intercept it. There's no explicit focus change signal as far as I can tell (which is weird, because I keep
-        // getting a log message whining about the focus changed listener not being received)
-        std::cout << (int) flags << std::endl;
+    commandInput.signal_state_flags_changed().connect([this](Gtk::StateFlags prevState) {
+        auto mode = this->modeController->getMode();
+        if (mode == Mode::Command) {
+            if ((prevState & Gtk::StateFlags::FOCUSED) == Gtk::StateFlags::FOCUSED) {
+                // Prev state was focused, check if focused still
+                if ((commandInput.get_state_flags() & Gtk::StateFlags::FOCUSED) == Gtk::StateFlags::NORMAL) {
+                    // No longer focused, revert to normal mode
+                    this->modeController->setMode(Mode::Normal);
+                }
+            }
+        }
     });
 
     commandInputContainer.append(commandLabel);
     commandInputContainer.append(commandInput);
-
-    container.append(modelineContainer);
-    container.append(commandInputContainer);
-
     modeController->signal_mode_changed().connect([this](Mode mode) {
         commandInput.set_sensitive(mode == Mode::Command);
         if (mode == Mode::Command) {
@@ -93,7 +120,6 @@ Modeline::Modeline(
             commandInput.set_text("");
         }
     });
-
 }
 
 }

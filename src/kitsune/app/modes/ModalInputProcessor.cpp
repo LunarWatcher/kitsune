@@ -2,10 +2,8 @@
 #include "gdk/gdkkeysyms.h"
 #include "gdkmm/enums.h"
 #include "gtkmm/enums.h"
-#include <iostream>
 
 namespace kitsune {
-
 
 ModalInputProcessor::ModalInputProcessor(
     const std::shared_ptr<ModeController>& modeController,
@@ -56,7 +54,6 @@ bool ModalInputProcessor::handleInsertModeOnly(guint k, guint, Gdk::ModifierType
 }
 
 bool ModalInputProcessor::handleNavigationAllowedInput(guint k, guint, Gdk::ModifierType modifiers) {
-    std::cout << "handle navigation allowed input" << std::endl;
     if (modeController->getMode() == Mode::Normal) {
         switch (k) {
         case GDK_KEY_Return:
@@ -80,7 +77,6 @@ bool ModalInputProcessor::handleCommandInput(guint k, guint, Gdk::ModifierType m
         }
         return true;
     }
-    std::cout << std::hex << k << std::dec << std::endl;
     if (k == GDK_KEY_Escape) {
         modeController->setMode(Mode::Normal);
         return true;
@@ -119,6 +115,7 @@ bool ModalInputProcessor::handleNormalModeInput(
 void ModalInputProcessor::recursiveNavigate(Gtk::DirectionType direction) {
     Gtk::Widget* widget = get_widget();
 
+    // TODO: this doesn't seem to work with left/right nav when a ListViewItem gains focus 
     while (widget != nullptr) {
         if (widget->child_focus(direction)) {
             break;

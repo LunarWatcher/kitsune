@@ -16,6 +16,9 @@ void ModeController::setMode(Mode newMode) {
     std::unique_lock l(m);
     mode = newMode;
 
+    // Required to avoid deadlock in modeline. If this gets too recursive, state will be weird
+    l.unlock();
+
     signalModeChanged.emit(newMode);
 }
 

@@ -1,16 +1,19 @@
 #include "KitsuneWindow.hpp"
 #include "gtk/gtk.h"
 #include "gtkmm/cssprovider.h"
-#include <iostream>
+#include "kitsune/app/modes/ModalInputProcessor.hpp"
 
 namespace kitsune {
 
 MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
     ApplicationWindow(app),
     modeController(new ModeController()),
+    fallbackInputProcessor(
+        new ModalInputProcessor(modeController, ModalInputType::Window)
+    ),
     terminals(modeController),
     modeline(modeController, this),
-    root(Gtk::Orientation::VERTICAL, 8)
+    root(Gtk::Orientation::VERTICAL, 0)
 {
     set_title("Kitsune");
     set_default_size(720, 480);
@@ -21,6 +24,11 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
     for (size_t i = 0; i < 3; ++i) {
         terminals.addTerminal(conf);
     }
+
+    add_controller(fallbackInputProcessor);
+
+    // Init event-driven stuff
+    modeController->setMode(Mode::Normal);
 }
 
 void MainWindow::loadCSS() {

@@ -56,7 +56,7 @@ TermList::TermList(
 
         auto* label = (Gtk::Label*) ptr->get_child();
         label->set_wrap(true);
-        label->set_css_classes({ "menu-row" });
+        label->set_css_classes({ "pad-medium" });
         label->set_text(data->termName);
     });
     factory->signal_unbind().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {

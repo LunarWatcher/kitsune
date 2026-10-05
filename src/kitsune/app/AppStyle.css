@@ -1,7 +1,10 @@
 R"SEP(
 
-.menu-row {
-    padding: 4px;
+:root {
+    --kitsune-orange: #ED960B;
+    --kitsune-black: #1B0C04;
+    --kitsune-purple: #7712CF;
+    --kitsune-white: white;
 }
 
 .pad-medium {
@@ -12,6 +15,21 @@ R"SEP(
 weird, especially in the listview thing) */
 ::focus {
     border: 4px solid pink;
+}
+
+.dark {
+    background-color: var(--kitsune-black);
+}
+.light-text {
+    color: var(--kitsune-white);
+}
+
+.modeline-root .primary {
+    background-color: var(--kitsune-purple);
+}
+
+.modeline-root label, .modeline-root text {
+    padding: 4px;
 }
 
 )SEP"
