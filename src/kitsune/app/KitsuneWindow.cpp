@@ -1,19 +1,29 @@
 #include "KitsuneWindow.hpp"
 #include "gtk/gtk.h"
 #include "gtkmm/cssprovider.h"
-
-#include <thread>
-#include <chrono>
+#include <iostream>
 
 namespace kitsune {
 
-MainWindow::MainWindow() : root(Gtk::Orientation::HORIZONTAL, 8) {
+MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
+    ApplicationWindow(app),
+    modeController(new ModeController()),
+    terminals(modeController),
+    modeline(modeController, this),
+    root(Gtk::Orientation::VERTICAL, 8)
+{
     set_title("Kitsune");
     set_default_size(720, 480);
 
-    root.append(*terminals.root());
-    set_child(root);
+    initRootContainer();
+    loadCSS();
 
+    for (size_t i = 0; i < 3; ++i) {
+        terminals.addTerminal(conf);
+    }
+}
+
+void MainWindow::loadCSS() {
     auto css = Gtk::CssProvider::create();
     css->load_from_string(
         #include "AppStyle.css"
@@ -24,14 +34,12 @@ MainWindow::MainWindow() : root(Gtk::Orientation::HORIZONTAL, 8) {
         css,
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
     );
+}
 
-    // new std::thread([this]() {
-        // std::this_thread::sleep_for(std::chrono::seconds(2));
-        for (size_t i = 0; i < 3; ++i) {
-            terminals.addTerminal(conf);
-            // std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
-    // });
+void MainWindow::initRootContainer() {
+    root.append(*terminals.root());
+    root.append(*modeline.root());
+    set_child(root);
 }
 
 }

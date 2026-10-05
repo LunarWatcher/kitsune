@@ -49,7 +49,7 @@ public:
     }
 
     const std::string& font() const {
-        static std::string font = "SauceCodePRo Nerd Font 12";
+        static std::string font = "SauceCodePro Nerd Font 11";
         return font;
     }
 };

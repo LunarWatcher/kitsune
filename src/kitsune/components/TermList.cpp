@@ -4,22 +4,36 @@
 #include "gtkmm/enums.h"
 #include "gtkmm/label.h"
 #include "gtkmm/signallistitemfactory.h"
+#include "kitsune/app/modes/ModalInputProcessor.hpp"
+#include "kitsune/log/Logger.hpp"
 #include "kitsune/model/TerminalModel.hpp"
 #include <atomic>
 
 namespace kitsune {
 
-TermList::TermList()
-    : rootContainer(Gtk::Orientation::HORIZONTAL),
-      termContainer()
+TermList::TermList(
+    const std::shared_ptr<ModeController>& modeController
+)
+    : modeController(modeController),
+      rootContainer(Gtk::Orientation::HORIZONTAL),
+      termContainer(),
+      listInputProcessor(
+          std::make_shared<ModalInputProcessor>(
+              modeController,
+              ModalInputType::ForwardNavigation
+          )
+      )
 {
     selectionModel = Gtk::SingleSelection::create();
     selectionModel->set_can_unselect(false);
 
     dataModel = Gio::ListStore<TerminalModel>::create();
     selectionModel->set_model(dataModel);
-    
+
     this->rootView.set_model(selectionModel);
+    this->rootView.add_controller(
+        listInputProcessor
+    );
 
     const auto factory = Gtk::SignalListItemFactory::create();
 
@@ -45,6 +59,11 @@ TermList::TermList()
         label->set_css_classes({ "menu-row" });
         label->set_text(data->termName);
     });
+    factory->signal_unbind().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
+        auto data = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item());
+
+        auto* label = (Gtk::Label*) ptr->get_child();
+    });
 
     this->rootView.set_factory(factory);
 
@@ -68,10 +87,14 @@ TermList::TermList()
 
 void TermList::addTerminal(const Config& conf) {
     static std::atomic<size_t> i = 0;
-    g_log(nullptr, GLogLevelFlags::G_LOG_LEVEL_INFO, "Adding terminal");
+    logger::debug("Adding new terminal");
     // To my great annoyance, under GTK4, Glib::RefPtr is literally just an std::shared_ptr
     auto ptr = Glib::make_refptr_for_instance<TerminalModel>(
-        new TerminalModel("Terminal with a really fucking long name", conf)
+        new TerminalModel(
+            "Terminal with a really fucking long name",
+            conf,
+            modeController
+        )
     );
     ptr->terminalView->spawn({ "/usr/bin/zsh" });
     ptr->page = this->termContainer.add(*ptr->terminalView->ptr(), std::to_string(++i));

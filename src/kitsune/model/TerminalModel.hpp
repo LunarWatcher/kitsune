@@ -3,7 +3,10 @@
 #include "glibmm/refptr.h"
 #include "glibmm/ustring.h"
 #include "gtkmm/stackpage.h"
+#include "kitsune/app/modes/ModalInputProcessor.hpp"
 #include "kitsune/gtk/VTEWidget.hpp"
+#include "kitsune/log/Logger.hpp"
+#include <memory>
 namespace kitsune {
 
 struct TerminalModel : public Glib::Object {
@@ -12,19 +15,26 @@ struct TerminalModel : public Glib::Object {
     std::shared_ptr<VTEWidget> terminalView;
 
     Glib::RefPtr<Gtk::StackPage> page;
+    Glib::RefPtr<ModalInputProcessor> inputProc;
 
     TerminalModel(
         const Glib::ustring& termName,
-        const Config& config
-    ) : termName(termName) {
+        const Config& config,
+        const std::shared_ptr<ModeController>& modeController
+    ) : termName(termName),
+        inputProc(std::make_shared<ModalInputProcessor>(
+                modeController,
+                ModalInputType::InsertOnly
+            ))
+    {
         auto res = VTEWidget::create(config);
 
+        // TODO: we should probably use the create pattern so this can return null and be error handled more properly
         if (res) {
             terminalView = *res;
+            terminalView->ptr()->add_controller(inputProc);
         } else {
-            g_log(
-                nullptr,
-                GLogLevelFlags::G_LOG_LEVEL_ERROR,
+            logger::error(
                 "An error happened while spawning the terminal: %s",
                 res.error().c_str()
             );

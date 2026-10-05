@@ -3,7 +3,11 @@ add_library(kitsunesrc STATIC
 
     kitsune/app/KitsuneWindow.cpp
 
+    kitsune/app/modes/ModalInputProcessor.cpp
+    kitsune/app/modes/ModeController.cpp
+
     kitsune/components/TermList.cpp
+    kitsune/components/Modeline.cpp
 )
 add_executable(kitsune kitsune/Main.cpp)
 

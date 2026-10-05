@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
         "org.codeberg.lunarwatcher.kitsune"
     );
 
-    return gui->make_window_and_run<kitsune::MainWindow>(argc, argv);
+    return gui->make_window_and_run<kitsune::MainWindow>(
+        argc, argv, gui
+    );
 
 }
