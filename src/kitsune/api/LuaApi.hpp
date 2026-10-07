@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kitsune/automation/graph/TaskGraph.hpp"
+#include "kitsune/components/TermList.hpp"
 #include <filesystem>
 #include <lua.hpp>
 
@@ -14,6 +16,10 @@ class LuaApi {
 private:
     lua_State* state;
 
+    // TODO: need to handle concurrent access probably?
+    TermList* termList;
+    std::unordered_map<std::string, std::shared_ptr<TaskGraph>> pipelines;
+
     void initGlobals();
     void initApis();
 
@@ -23,6 +29,10 @@ public:
     ~LuaApi();
 
     void run(const std::filesystem::path& path);
+
+    TermList* getTermList() { return termList; }
+    // TODO: this has too much business logic attached to it, it should be separated
+    std::unordered_map<std::string, std::shared_ptr<TaskGraph>>& getPipelines() { return pipelines; }
 
 };
 

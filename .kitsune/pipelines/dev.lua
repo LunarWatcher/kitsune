@@ -1,7 +1,13 @@
-local pipeline = require("kitsune.pipeline");
-print("Good girl :3")
+local pipelines = require("kitsune.pipelines");
 
-pipeline.createTask(
+local pipeline = pipelines.new(
+    "Dev pipeline"
+)
+
+print("Good girl :3")
+print(pipeline)
+
+pipeline:createTask(
     "build",
     {
 

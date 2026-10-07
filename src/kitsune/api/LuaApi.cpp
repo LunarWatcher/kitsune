@@ -57,7 +57,7 @@ void LuaApi::initGlobals() {
 
 void LuaApi::initApis() {
     registerApi(
-        "kitsune.pipeline",
+        "kitsune.pipelines",
         AutomationApi::luaopen_kitsune_pipelines
     );
 }
