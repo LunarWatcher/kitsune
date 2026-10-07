@@ -16,6 +16,7 @@ struct TerminalModel : public Glib::Object {
 
     Glib::RefPtr<Gtk::StackPage> page;
     Glib::RefPtr<ModalInputProcessor> inputProc;
+    Glib::RefPtr<ModalInputProcessor> rowProc;
 
     TerminalModel(
         const Glib::ustring& termName,
@@ -25,6 +26,10 @@ struct TerminalModel : public Glib::Object {
         inputProc(std::make_shared<ModalInputProcessor>(
                 modeController,
                 ModalInputType::InsertOnly
+            )),
+        rowProc(std::make_shared<ModalInputProcessor>(
+                modeController,
+                ModalInputType::ForwardNavigation
             ))
     {
         auto res = VTEWidget::create(config);

@@ -3,6 +3,7 @@
 #include "gtkmm/box.h"
 #include "gtkmm/applicationwindow.h"
 
+#include "kitsune/api/LuaApi.hpp"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
 #include "kitsune/app/modes/ModeController.hpp"
 #include "kitsune/components/Modeline.hpp"
@@ -22,6 +23,8 @@ private:
     Modeline modeline;
 
     kitsune::Config conf;
+
+    LuaApi api;
 
     void initRootContainer();
     void loadCSS();

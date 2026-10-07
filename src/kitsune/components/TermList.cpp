@@ -58,13 +58,14 @@ TermList::TermList(
         label->set_wrap(true);
         label->set_css_classes({ "pad-medium" });
         label->set_text(data->termName);
+        label->add_controller(data->rowProc);
     });
     factory->signal_unbind().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
         auto data = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item());
 
         auto* label = (Gtk::Label*) ptr->get_child();
+        label->remove_controller(data->rowProc);
     });
-
     this->rootView.set_factory(factory);
 
     this->rootView.set_expand(false);

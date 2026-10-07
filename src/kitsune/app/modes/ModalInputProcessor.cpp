@@ -113,11 +113,17 @@ bool ModalInputProcessor::handleNormalModeInput(
 }
 
 void ModalInputProcessor::recursiveNavigate(Gtk::DirectionType direction) {
-    Gtk::Widget* widget = get_widget();
+    Gtk::Widget* widget = get_widget()->get_parent();
 
     // TODO: this doesn't seem to work with left/right nav when a ListViewItem gains focus 
     while (widget != nullptr) {
         if (widget->child_focus(direction)) {
+
+            // This just prints gtkmm_GtkWidget. Not particularly helpful
+            // logger::debug(
+            //     "Navigating on %s",
+            //     g_type_name(widget->get_type())
+            // );
             break;
         }
         widget = widget->get_parent();

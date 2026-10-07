@@ -29,6 +29,8 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
 
     // Init event-driven stuff
     modeController->setMode(Mode::Normal);
+
+    api.run("../.kitsune/pipelines/dev.lua");
 }
 
 void MainWindow::loadCSS() {

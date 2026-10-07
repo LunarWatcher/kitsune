@@ -1,13 +1,19 @@
 add_library(kitsunesrc STATIC
-    kitsune/gtk/VTEWidget.cpp
+    kitsune/api/LuaApi.cpp
+    kitsune/api/util/LuaRegistry.cpp
 
     kitsune/app/KitsuneWindow.cpp
 
     kitsune/app/modes/ModalInputProcessor.cpp
     kitsune/app/modes/ModeController.cpp
 
+    kitsune/automation/AutomationApi.cpp
+    kitsune/automation/graph/TaskGraph.cpp
+
     kitsune/components/TermList.cpp
     kitsune/components/Modeline.cpp
+
+    kitsune/gtk/VTEWidget.cpp
 )
 add_executable(kitsune kitsune/Main.cpp)
 
