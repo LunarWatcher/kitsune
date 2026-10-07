@@ -13,7 +13,7 @@ R"SEP(
 
 /* Temporary for focus debug (will probably turn this into a permanent CSS rule, looks like focus vs. active is a bit
 weird, especially in the listview thing) */
-::focus {
+:focus {
     border: 4px solid pink;
 }
 
