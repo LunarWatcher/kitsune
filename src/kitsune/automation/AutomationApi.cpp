@@ -7,7 +7,7 @@
 
 namespace kitsune {
 
-extern int AutomationApi::createTask(lua_State* L) {
+int AutomationApi::createTask(lua_State* L) {
     auto id = util::getStringArg<std::string>(L, 1);
     luaL_checktype(L, 2, LUA_TTABLE);
 
