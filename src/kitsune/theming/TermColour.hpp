@@ -33,8 +33,8 @@ private:
         util::colour(0x33c7de),
         util::colour(0xffffff),
     };
-    GdkRGBA foregroundData = util::colour(0xffffff);
-    GdkRGBA backgroundData = util::colour(0x000000);
+    GdkRGBA foregroundData = util::colour(0x000000);
+    GdkRGBA backgroundData = util::colour(0xffffff);
     std::optional<std::string> fontStr;
 public:
     TermColour() = default;
