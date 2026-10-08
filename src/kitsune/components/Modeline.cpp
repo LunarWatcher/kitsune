@@ -40,6 +40,8 @@ Modeline::Modeline(
     container.append(modelineContainer);
     container.append(commandInputContainer);
 
+    container.set_hexpand(true);
+    container.set_vexpand(false);
 }
 
 void Modeline::initCSS() {
