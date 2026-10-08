@@ -58,7 +58,7 @@ int AutomationApi::luaopen_kitsune_pipelines(lua_State* L) {
     luaL_newlib(L, functions);
 
     static const luaL_Reg pipelineFuncs[] {
-        { "createTask", createTask },
+        { "task", createTask },
         { nullptr, nullptr },
     };
     util::registerMetatable(L, pipelineFuncs, UDataPipeline);

@@ -15,6 +15,17 @@ Shell scripts do suffer the second you have parallel or non-terminating commands
 
 There's also plenty of cases where make or make-emulating shell scripts are better. Make still suffers from most of the same problems around interactivity and log visibility.
 
+## Example
+
+```lua
+local pipelines = require("kitsune.pipelines")
+-- A file can define multiple pipelines, but the convention is one file per pipeline
+local pipeline = pipelines.new("Some recognizable name")
+pipeline:task("build", {
+    command = { "/usr/bin/zsh" }
+}) -- See below for full signature
+```
+
 ## API
 
 TODO: this is written purely off the top of my head without verifying if the lua is syntactically valid
@@ -28,18 +39,15 @@ task(
     name = "Display name",
     -- Mutually exclusive: only command, shellCommand, or luaCommand may be supplied
 
-    -- List of strings. This runs a command directly and bypasses the shell.
-    command = { "/usr/bin/firefox" },
-
-    -- Single string. Runs the command in a shell with all shell features enabled.
-    shellCommand = "emacs $(pwd)/../README.md",
-    -- What shell to run in. If not specified, the $SHELL is used. Falls back to bash if
-    -- that fails too. If you don't have bash and don't have $SHELL, kitsune will exit and tell you to unfuck your environment
-    shell = "bash",
-
-    -- If you need even more granularity, luaCommand lets you script. For process execution,
-    -- use moonbeam's API
-    luaCommand = function() end
+    -- Defines the command to run
+    command = function(executor, inputs) 
+      -- @param executor - Used to run things in the shell. Tasks and shells are 1:1, so you should only
+      -- run one command and return
+      -- @param inputs - the inputs to the function (see the `inputs` arg to `task`)
+      executor:shell("fastfetch") -- Execute in shell
+      executor:shell("fastfetch", "/usr/bin/bash") -- Execute in specific shell
+      executor:command({"/usr/bin/local/kitsune", "whatever"}) -- Execute specific directly
+    end
 
     -- Defines whether or not the command has dependencies. Pretty self-explanatory.
     depends = { "other-task-id" },
@@ -79,16 +87,16 @@ task(
       -- Called when the service is live. Only called when liveness is a non-nil function
       onLive = function onLive() end
       -- success (boolean): whether or not the process quit with exit code 0 or not
-      onTerminated = function onTerminated(task, success) end
+      onTerminated = function onTerminated(success) end
     },
 
-    -- Inputs can be used to modify commands. They must be present in the command string as
-    -- {{input.input-name}}. To reference `tests` in the example below in a command, use {{input.tests}}
-    -- The keys are irrelevant, but are used to actually reference the input. The value is a description to help the user.
-    -- Inputs are never required: they are only used to modify commands. For example, if you have a
-    -- task that runs all tests, you may want to provide an input that allows specific tests to run,
-    -- provided your test runner supports this. With a catch2 runner, the command could be
-    -- `shellCommand = "./bin/tests {{inputs.test}}"`
+    -- The command's working directory. Defaults to the working directory at the time kitsune was started
+    -- Relative working directories are supported. Relative working directories are relative to
+    -- kitsune's start directory.
+    workingDirectory = "/some/folder"
+
+    -- Inputs can be used to modify commands, provided the `command` makes use of them. 
+    -- If an input is defined, `inputs["tests"]` in the `command` can be used to provide additional command line args. 
     inputs = {
       tests = "Specific tests to run"
     },
