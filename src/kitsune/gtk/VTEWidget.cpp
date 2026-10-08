@@ -1,6 +1,4 @@
 #include "VTEWidget.hpp"
-#include "graphene.h"
-#include "kitsune/gtk/ColourUtil.hpp"
 #include "kitsune/theming/TermColour.hpp"
 #include <vte/vte.h>
 
@@ -39,7 +37,8 @@ void VTEWidget::applyTheming(
         VTE_TERMINAL(terminal),
         &scheme.foreground(),
         &scheme.background(),
-        scheme.palette().data(), scheme.palette().size()
+        scheme.palette().data(),
+        scheme.palette().size()
     );
     auto desc = pango_font_description_from_string(
         scheme.font().c_str()

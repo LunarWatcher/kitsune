@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gdk/gdk.h"
+#include "gdkmm/rgba.h"
 #include "kitsune/gtk/ColourUtil.hpp"
 #include <string>
 #include <vector>
@@ -12,45 +13,60 @@ namespace kitsune {
  * future if anyone else wants this functionality
  */
 class TermColour {
+private:
+    // Export of my current konsole scheme (which itself is an export from a gnome terminal default scheme)
+    std::vector<GdkRGBA> paletteData {
+        util::colour(0x171421),
+        util::colour(0xc01c28),
+        util::colour(0x26a269),
+        util::colour(0xa2734c),
+        util::colour(0x12488b),
+        util::colour(0xa347ba),
+        util::colour(0x2aa1b3),
+        util::colour(0xd0cfcc),
+        util::colour(0x5e5c64),
+        util::colour(0xf66151),
+        util::colour(0x33d17a),
+        util::colour(0xe9ad0c),
+        util::colour(0x2a7bde),
+        util::colour(0xc061cb),
+        util::colour(0x33c7de),
+        util::colour(0xffffff),
+    };
+    GdkRGBA foregroundData = util::colour(0xffffff);
+    GdkRGBA backgroundData = util::colour(0x000000);
+    std::string fontStr = "SauceCodePro Nerd Font 11";
 public:
     TermColour() = default;
 
     const GdkRGBA& foreground() const {
-        static auto foreground = util::colour(0x000000);
-        return foreground;
+        return foregroundData;
     }
 
     const GdkRGBA& background() const {
-        static auto background = util::colour(0xffffff);
-        return background;
+        return backgroundData;
     }
 
     const std::vector<GdkRGBA>& palette() const {
-        // Export of my current konsole scheme (which itself is an export from a gnome terminal default scheme)
-        static std::vector<GdkRGBA> palette = {
-            util::colour(0x171421),
-            util::colour(0xc01c28),
-            util::colour(0x26a269),
-            util::colour(0xa2734c),
-            util::colour(0x12488b),
-            util::colour(0xa347ba),
-            util::colour(0x2aa1b3),
-            util::colour(0xd0cfcc),
-            util::colour(0x5e5c64),
-            util::colour(0xf66151),
-            util::colour(0x33d17a),
-            util::colour(0xe9ad0c),
-            util::colour(0x2a7bde),
-            util::colour(0xc061cb),
-            util::colour(0x33c7de),
-            util::colour(0xffffff),
-        };
-        return palette;
+        return paletteData;
     }
 
     const std::string& font() const {
-        static std::string font = "SauceCodePro Nerd Font 11";
-        return font;
+        return fontStr;
+    }
+
+    void replacePalette(
+        GdkRGBA foreground,
+        GdkRGBA background,
+        std::vector<GdkRGBA>&& data
+    ) {
+        foregroundData = std::move(foreground);
+        backgroundData = std::move(background);
+        paletteData = std::move(data);
+    }
+
+    void setFont(std::string&& data) {
+        fontStr = std::move(data);
     }
 };
 

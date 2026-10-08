@@ -3,9 +3,11 @@
 local config = {}
 
 --- Sets the terminal colourscheme
+--- @param foreground number Foreground colour
+--- @param background number Background colour
 --- @param colours table<number> 16 hex values (0x000000-0xffffff) that make up the terminal colourscheme. Same setup as
 ---     other terminal emulators
-function config.setTermColours(colours) end
+function config.setTermColours(foreground, background, colours) end
 
 --- Sets the font to use specifically in the terminal emulator
 --- @param fontName string A font recognized by GTK, for example `SauceCodePro Nerd Font 11`

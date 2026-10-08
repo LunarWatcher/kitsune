@@ -1,6 +1,7 @@
 add_library(kitsunesrc STATIC
     kitsune/api/LuaApi.cpp
     kitsune/api/util/LuaRegistry.cpp
+    kitsune/api/util/LangExt.cpp
 
     kitsune/app/KitsuneWindow.cpp
 
@@ -12,6 +13,8 @@ add_library(kitsunesrc STATIC
 
     kitsune/components/TermList.cpp
     kitsune/components/Modeline.cpp
+
+    kitsune/config/ConfigApi.cpp
 
     kitsune/gtk/VTEWidget.cpp
 )

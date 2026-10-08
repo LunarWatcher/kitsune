@@ -18,6 +18,7 @@ private:
 
     // TODO: need to handle concurrent access probably?
     TermList* termList;
+    Config* conf;
     std::unordered_map<std::string, std::shared_ptr<TaskGraph>> pipelines;
 
     void initGlobals();
@@ -25,12 +26,17 @@ private:
 
     void registerApi(const char* libname, lua_CFunction func);
 public:
-    LuaApi();
+    LuaApi(
+        TermList* termList,
+        Config* conf
+    );
     ~LuaApi();
 
-    void run(const std::filesystem::path& path);
+    bool run(const std::filesystem::path& path);
+    void loadConfig();
 
     TermList* getTermList() { return termList; }
+    Config* getConfig() { return conf; }
     // TODO: this has too much business logic attached to it, it should be separated
     std::unordered_map<std::string, std::shared_ptr<TaskGraph>>& getPipelines() { return pipelines; }
 

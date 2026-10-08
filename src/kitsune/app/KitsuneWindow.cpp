@@ -13,8 +13,13 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
     ),
     terminals(modeController),
     modeline(modeController, this),
-    root(Gtk::Orientation::VERTICAL, 0)
+    root(Gtk::Orientation::VERTICAL, 0),
+    api(
+        &terminals, &conf
+    )
 {
+    api.loadConfig();
+
     set_title("Kitsune");
     set_default_size(720, 480);
 
