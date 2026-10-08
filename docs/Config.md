@@ -22,13 +22,13 @@ The full Lua API is available in config files. This section describes the API pr
 local config = require("kitsune.config");
 ```
 
-### `config.setTermColours(colours: list<int>)`
+### `config.setTermColours(foreground: int, background: int, colours: list<int>)`
 
-Used to set the terminal colourscheme. The `colours` param is a list of 16 hex colours, corresponding to a standard 16 colour terminal scheme.
+Used to set the terminal colourscheme. The `colours` param is a list of 16 hex colours, corresponding to a standard 16 colour terminal scheme. 
 
 Example:
 ```lua
-setTermColours({ 0x171421, 0xc01c28, ..., 0xffffff })
+setTermColours(0x000000, 0xffffff, { 0x171421, 0xc01c28, ..., 0xffffff })
 ```
 
 A default colourscheme based on gnome terminal's light mode scheme is provided if no scheme is set.
