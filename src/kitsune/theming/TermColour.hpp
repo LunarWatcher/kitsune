@@ -35,7 +35,7 @@ private:
     };
     GdkRGBA foregroundData = util::colour(0xffffff);
     GdkRGBA backgroundData = util::colour(0x000000);
-    std::string fontStr = "SauceCodePro Nerd Font 11";
+    std::optional<std::string> fontStr;
 public:
     TermColour() = default;
 
@@ -51,7 +51,7 @@ public:
         return paletteData;
     }
 
-    const std::string& font() const {
+    const std::optional<std::string>& font() const {
         return fontStr;
     }
 

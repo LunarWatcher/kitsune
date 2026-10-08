@@ -40,10 +40,14 @@ void VTEWidget::applyTheming(
         scheme.palette().data(),
         scheme.palette().size()
     );
-    auto desc = pango_font_description_from_string(
-        scheme.font().c_str()
-    );
-    vte_terminal_set_font(VTE_TERMINAL(terminal), desc);
+
+    auto& font = scheme.font();
+    if (font.has_value()) {
+        auto desc = pango_font_description_from_string(
+            font->c_str()
+        );
+        vte_terminal_set_font(VTE_TERMINAL(terminal), desc);
+    }
 }
 
 void VTEWidget::spawn(const std::vector<std::string>& command) {
