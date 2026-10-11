@@ -33,7 +33,16 @@ public:
     ~LuaApi();
 
     bool run(const std::filesystem::path& path);
-    void loadConfig();
+
+    /**
+     * Run a lua script stored in a string.
+     * This should not be used outside tests.
+     */
+    std::expected<bool, std::string> runString(const std::string& script);
+
+    void loadConfig(
+        const std::filesystem::path& configRoot
+    );
 
     TermList* getTermList() { return termList; }
     Config* getConfig() { return conf; }

@@ -15,7 +15,7 @@ int ConfigApi::setTermColours(lua_State* L) {
     int32_t foreground = luaL_checkinteger(L, 1);
     int32_t background = luaL_checkinteger(L, 2);
     luaL_checktype(L, 3, LUA_TTABLE);
-    luaL_argcheck(L, util::length(L, 3) == 16, 1, "Arg must be of length 16");
+    luaL_argcheck(L, util::length(L, 3) == 16, 3, "Arg must be of length 16");
 
     std::vector<GdkRGBA> paletteData;
     util::iterateTable(

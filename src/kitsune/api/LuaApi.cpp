@@ -1,12 +1,13 @@
 #include "LuaApi.hpp"
 
 #include "kitsune/api/TypeRegistry.hpp"
+#include "kitsune/api/util/LangExt.hpp"
 #include "kitsune/api/util/UDataUtils.hpp"
 
 #include "kitsune/automation/AutomationApi.hpp"
 #include "kitsune/config/ConfigApi.hpp"
 
-#include "kitsune/log/Logger.hpp"
+#include "minilog/minilog.hpp"
 #include "util/LuaRegistry.hpp"
 
 #include <stc/Environment.hpp>
@@ -35,10 +36,23 @@ LuaApi::~LuaApi() {
 bool LuaApi::run(const std::filesystem::path& path) {
     int res = luaL_dofile(state, path.c_str());
     if (res != 0) {
-        logger::error(
-            "Failed to load lua file: %s",
+        minilog::error(
+            "Failed to load lua file: {}",
             lua_tostring(state, -1)
         );
+    }
+    return res == 0;
+}
+
+std::expected<bool, std::string> LuaApi::runString(const std::string& script) {
+    int res = luaL_dostring(state, script.c_str());
+    if (res != 0) {
+        std::string error = util::getStringArg<std::string>(state, -1);
+        minilog::error(
+            "Failed to run script: {}",
+            error
+        );
+        return std::unexpected(error);
     }
     return res == 0;
 }
@@ -76,16 +90,18 @@ void LuaApi::initApis() {
     );
 }
 
-void LuaApi::loadConfig() {
+void LuaApi::loadConfig(
+    const std::filesystem::path& configRoot
+) {
     std::vector<std::string> files = {"init.lua", "local.lua"};
     for (const auto& file : files) {
-        std::filesystem::path f = stc::expandUserPath("~/.config/kitsune/" + file);
+        std::filesystem::path f = configRoot / file;
         if (!std::filesystem::exists(f)) {
-            logger::debug("%s does not exist", f.c_str());
+            minilog::debug("{} does not exist", f.c_str());
         } else {
-            logger::info("Loading %s", f.c_str());
+            minilog::info("Loading {}", f.c_str());
             if (!run(f)) {
-                logger::error("Failed to load config file!");
+                minilog::error("Failed to load config file!");
                 throw std::runtime_error("Failed to load config file!");
             }
         }

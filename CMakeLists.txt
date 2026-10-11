@@ -20,6 +20,10 @@ FetchContent_Declare(stc
     GIT_REPOSITORY https://codeberg.org/LunarWatcher/stc
     GIT_TAG v2026-09-13
 )
+FetchContent_Declare(minilog
+    GIT_REPOSITORY https://codeberg.org/LunarWatcher/minilog
+    GIT_TAG adfca0bcd67d4416778621e5071f512e8bf27bc4
+)
 FetchContent_Declare(CLI12
     GIT_REPOSITORY https://codeberg.org/LunarWatcher/CLI12
     GIT_TAG v3.1.0
@@ -32,13 +36,14 @@ message(STATUS "Using Lua ${LUA_BINARY_NAME}")
 FetchContent_MakeAvailable(
     stc
     CLI12
+    minilog
 )
 
 add_subdirectory(src)
-#add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)
 
-#add_custom_target(test
-    #COMMAND tests
-    #DEPENDS tests
-    #COMMENT "Test kitsune")
+add_custom_target(test
+    COMMAND tests
+    DEPENDS tests
+    COMMENT "Test kitsune")
 # vim:ft=cmake

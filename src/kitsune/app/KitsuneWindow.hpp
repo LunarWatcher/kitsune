@@ -29,7 +29,10 @@ private:
     void initRootContainer();
     void loadCSS();
 public:
-    MainWindow(const Glib::RefPtr<Gtk::Application>& app);
+    MainWindow(
+        const Glib::RefPtr<Gtk::Application>& app,
+        const EnvConfig& envConfig = {}
+    );
 };
 
 }

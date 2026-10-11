@@ -5,7 +5,7 @@
 #include "gtkmm/stackpage.h"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
 #include "kitsune/gtk/VTEWidget.hpp"
-#include "kitsune/log/Logger.hpp"
+#include "minilog/minilog.hpp"
 #include <memory>
 namespace kitsune {
 
@@ -39,8 +39,8 @@ struct TerminalModel : public Glib::Object {
             terminalView = *res;
             terminalView->ptr()->add_controller(inputProc);
         } else {
-            logger::error(
-                "An error happened while spawning the terminal: %s",
+            minilog::error(
+                "An error happened while spawning the terminal: {}",
                 res.error().c_str()
             );
         }

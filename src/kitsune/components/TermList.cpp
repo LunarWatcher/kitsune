@@ -5,7 +5,7 @@
 #include "gtkmm/label.h"
 #include "gtkmm/signallistitemfactory.h"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
-#include "kitsune/log/Logger.hpp"
+#include "minilog/minilog.hpp"
 #include "kitsune/model/TerminalModel.hpp"
 #include <atomic>
 
@@ -88,7 +88,7 @@ TermList::TermList(
 
 void TermList::addTerminal(const Config& conf) {
     static std::atomic<size_t> i = 0;
-    logger::debug("Adding new terminal");
+    minilog::debug("Adding new terminal");
     // To my great annoyance, under GTK4, Glib::RefPtr is literally just an std::shared_ptr
     auto ptr = Glib::make_refptr_for_instance<TerminalModel>(
         new TerminalModel(

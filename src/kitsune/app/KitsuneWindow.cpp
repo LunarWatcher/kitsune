@@ -5,7 +5,10 @@
 
 namespace kitsune {
 
-MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
+MainWindow::MainWindow(
+    const Glib::RefPtr<Gtk::Application>& app,
+    const EnvConfig& envConfig
+) :
     ApplicationWindow(app),
     modeController(new ModeController()),
     fallbackInputProcessor(
@@ -18,7 +21,7 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application>& app) :
         &terminals, &conf
     )
 {
-    api.loadConfig();
+    api.loadConfig(envConfig.configRoot);
 
     set_title("Kitsune");
     set_default_size(720, 480);

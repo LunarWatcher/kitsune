@@ -13,4 +13,10 @@ inline constexpr GdkRGBA colour(int32_t hex) {
     };
 }
 
+inline constexpr int32_t reverse(const GdkRGBA& src) {
+    return (int32_t(src.red * 255) << 16)
+        + (int32_t(src.green * 255) << 8)
+        + (int32_t(src.blue * 255) << 0);
+}
+
 }
