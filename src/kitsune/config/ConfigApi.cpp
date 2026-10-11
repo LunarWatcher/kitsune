@@ -4,12 +4,9 @@
 #include "kitsune/api/util/LuaRegistry.hpp"
 #include "kitsune/api/LuaApi.hpp"
 #include "kitsune/gtk/ColourUtil.hpp"
-#include <iostream>
 #include <lua.hpp>
 
-
 namespace kitsune {
-
 
 int ConfigApi::setTermColours(lua_State* L) {
     int32_t foreground = luaL_checkinteger(L, 1);

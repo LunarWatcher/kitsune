@@ -66,7 +66,6 @@ task(
     --   need to restart an entire tree, you'll want to combine this with a pseudo-node (non-task node)
     -- - IfCompleted (default): Only rerun if it isn't currently running
     -- - Never: Never rerun for the rest of this session. Manually running the task is still allowed
-    -- - <function>: a function that returns `true` if a rerun is necessary. This is only offered as a last resort
     rerun = Rerun.IfCompleted,
 
     -- A liveness probe. Only required for and only used by non-terminating tasks.

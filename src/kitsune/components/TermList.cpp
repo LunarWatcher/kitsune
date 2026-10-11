@@ -34,6 +34,8 @@ TermList::TermList(
     this->rootView.add_controller(
         listInputProcessor
     );
+    this->rootView.set_single_click_activate();
+    this->rootView.set_tab_behavior(Gtk::ListTabBehavior::ITEM);
 
     const auto factory = Gtk::SignalListItemFactory::create();
 

@@ -9,11 +9,13 @@ add_library(kitsunesrc STATIC
     kitsune/app/modes/ModeController.cpp
 
     kitsune/automation/AutomationApi.cpp
+    kitsune/automation/PipelineController.cpp
     kitsune/automation/graph/TaskGraph.cpp
 
     kitsune/components/TermList.cpp
     kitsune/components/Modeline.cpp
 
+    kitsune/config/Config.cpp
     kitsune/config/ConfigApi.cpp
 
     kitsune/gtk/VTEWidget.cpp

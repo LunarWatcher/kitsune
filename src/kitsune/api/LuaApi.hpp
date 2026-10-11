@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kitsune/automation/graph/TaskGraph.hpp"
+#include "kitsune/automation/PipelineController.hpp"
 #include "kitsune/components/TermList.hpp"
 #include <filesystem>
 #include <lua.hpp>
@@ -19,7 +19,7 @@ private:
     // TODO: need to handle concurrent access probably?
     TermList* termList;
     Config* conf;
-    std::unordered_map<std::string, std::shared_ptr<TaskGraph>> pipelines;
+    PipelineController* pipelineController;
 
     void initGlobals();
     void initApis();
@@ -28,7 +28,8 @@ private:
 public:
     LuaApi(
         TermList* termList,
-        Config* conf
+        Config* conf,
+        PipelineController* pipelineController
     );
     ~LuaApi();
 
@@ -46,8 +47,8 @@ public:
 
     TermList* getTermList() { return termList; }
     Config* getConfig() { return conf; }
+    PipelineController* getPipelineController() { return pipelineController; }
     // TODO: this has too much business logic attached to it, it should be separated
-    std::unordered_map<std::string, std::shared_ptr<TaskGraph>>& getPipelines() { return pipelines; }
 
 };
 

@@ -2,6 +2,9 @@
 #include "gdk/gdkkeysyms.h"
 #include "gdkmm/enums.h"
 #include "gtkmm/enums.h"
+#include "gtkmm/listview.h"
+#include "minilog/minilog.hpp"
+#include <iostream>
 
 namespace kitsune {
 
@@ -113,22 +116,21 @@ bool ModalInputProcessor::handleNormalModeInput(
 }
 
 void ModalInputProcessor::recursiveNavigate(Gtk::DirectionType direction) {
-    Gtk::Widget* widget = get_widget()->get_parent();
+    Gtk::Widget* widget = get_widget();
 
-    // TODO: this doesn't seem to work with left/right nav when a ListViewItem gains focus 
+    // TODO: this doesn't seem to work with left/right nav when a ListViewItem gains focus
+    // 2026-10-11: I have narrowed this down to a weird interaction with specifically Paned. Both the ListView and
+    // terminal propagate their focus to the Paned, but only LEFT seems to do anything. RIGHT does nothing. F6 does very
+    // occasionally work, but it's currently borked at the time of writing this comment.
+    // But, it isn't the ListView/ListViewItem getting the focus that breaks the list. I am starting to suspect that the
+    // logic required for focus is going to be a fair bit more involved than I had hoped.
     while (widget != nullptr) {
         if (widget->child_focus(direction)) {
-
-            // This just prints gtkmm_GtkWidget. Not particularly helpful
-            // logger::debug(
-            //     "Navigating on %s",
-            //     g_type_name(widget->get_type())
-            // );
             break;
         }
+
         widget = widget->get_parent();
     }
-
 }
 
 bool ModalInputProcessor::handleInsertModeInput(

@@ -22,9 +22,7 @@ function Executor:command(command) end
 ---@alias LoadEnvVar fun(): string
 ---@alias OnLive fun()
 ---@alias OnTerminated fun(success: boolean)
----@alias RerunFunc fun(): boolean
 
--- TODO: sync values with the actual enum
 ---@enum Run
 local Run = {
     Auto = 0,
@@ -55,7 +53,7 @@ local PipelineHooks = {}
 ---@field command CommandCallback
 ---@field depends? table<string> The dependencies this task has, if any
 ---@field run? Run When to run the command. Defaults to OnDemand
----@field rerun? Rerun | RerunFunc Whether or not to rerun the command
+---@field rerun? Rerun Whether or not to rerun the command. Defaults to IfCompleted
 ---@field liveness? LivenessProbe Whether the process has come up yet. Required by non-terminating processes, otherwise optional.
 ---@field env? table<string, string | LoadEnvVar> Extra environment variables to set
 ---@field workingDirectory? string Used to override the working directory. Defaults to the kitsune process' cwd

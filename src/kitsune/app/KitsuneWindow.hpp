@@ -6,6 +6,7 @@
 #include "kitsune/api/LuaApi.hpp"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
 #include "kitsune/app/modes/ModeController.hpp"
+#include "kitsune/automation/PipelineController.hpp"
 #include "kitsune/components/Modeline.hpp"
 #include "kitsune/components/TermList.hpp"
 #include "kitsune/config/Config.hpp"
@@ -21,6 +22,7 @@ private:
 
     TermList terminals;
     Modeline modeline;
+    PipelineController pipelineController;
 
     kitsune::Config conf;
 

@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+luaregex="(lua|lualib|lauxlib).h[\">]"
+
+echo "$(pwd)"
+
+if grep -rE "$luaregex" ./src; then
+    echo "Found C-style lua imports! Cleaning them up now"
+
+    files="$(grep -rE "$luaregex" --files-with-matches ./src)"
+    for file in $files; do
+        echo "Attempting to clean up '$file'"
+        # Check if lua.hpp is already included
+        if grep -E '#include ["<]lua.hpp[>"]' "$file" > /dev/null; then
+            # Already got lua.hpp; nuke the includes
+            sed -Ei '/^#include ["<](lua|lualib|lauxlib).h[>"] *$/d' "$file"
+        else
+            echo "lua.hpp is not included in $file! Cannot auto-fix. Please add `lua.hpp` and try again"
+            exit 1
+        fi
+        git add "$file"
+    done
+    if grep -rE "$luaregex" ./src; then
+        echo "Failed to clean up C imports!"
+        exit 1
+    fi
+fi

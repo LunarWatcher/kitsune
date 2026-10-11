@@ -43,5 +43,5 @@ Note that this font only affects the terminal, and not the rest of the GUI. At t
 
 ### `config.pipelineLookups(lookups: list<string>)`
 
-Used to define pipeline lookup locations. `{{cwd}}/.kitsune` and `{{git_root}}/.kitsune` are always implicitly at the end of this list regardless of what you set it to here.
+Used to define pipeline lookup locations. `{{cwd}}/.kitsune/pipelines` and `{{git_root}}/.kitsune/pipelines` are always implicitly at the end of this list regardless of what you set it to here.
 

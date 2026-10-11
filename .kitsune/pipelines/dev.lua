@@ -4,13 +4,10 @@ local pipeline = pipelines.new(
     "Dev pipeline"
 )
 
-print("Good girl :3")
-print(pipeline)
-
 pipeline:task(
     "build",
     {
-        command = function(executor)
+        command = function(executor, inputs)
             executor:shell("make -j $(nproc)")
         end
     }
@@ -18,17 +15,22 @@ pipeline:task(
 pipeline:task(
     "test",
     {
-        command = function(executor)
+        command = function(executor, inputs)
             executor:shell("make -j $(nproc) test")
         end,
-        depends = { "build" }
+        depends = { "build" },
+        env = {
+            test = "value",
+            test2 = function() return "trans rights" end
+        }
     }
 )
 pipeline:task(
     "run",
     {
-        command = function(executor)
+        command = function(executor, inputs)
             executor:command({"./bin/kitsune"})
         end,
+        run = Run.Auto,
     }
 )

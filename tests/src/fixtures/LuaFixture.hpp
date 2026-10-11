@@ -3,6 +3,7 @@
 #include <stc/test/TestDirectory.hpp>
 
 #include "kitsune/api/LuaApi.hpp"
+#include "kitsune/automation/PipelineController.hpp"
 #include "kitsune/config/Config.hpp"
 #include "kitsune/gtk/Operators.hpp" // In use by tests, do not remove
 
@@ -10,6 +11,7 @@ namespace test {
 
 struct LuaFixture {
     kitsune::Config conf;
+    kitsune::PipelineController pipelineController;
     stc::testutil::TestDirectory dir;
     kitsune::LuaApi api;
 

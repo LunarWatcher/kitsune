@@ -20,6 +20,10 @@ struct Config {
     EnvConfig envConfig;
 
     TermColour scheme;
+
+    std::vector<std::string> pipelineLookupLocations = getDefaultPipelineLookups();
+
+    std::vector<std::string> getDefaultPipelineLookups();
 };
 
 }

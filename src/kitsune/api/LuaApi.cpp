@@ -5,6 +5,7 @@
 #include "kitsune/api/util/UDataUtils.hpp"
 
 #include "kitsune/automation/AutomationApi.hpp"
+#include "kitsune/automation/PipelineController.hpp"
 #include "kitsune/config/ConfigApi.hpp"
 
 #include "minilog/minilog.hpp"
@@ -14,14 +15,19 @@
 
 #include <lua.hpp>
 
+
+
+
 namespace kitsune {
 
 LuaApi::LuaApi(
     TermList* termList,
-    Config* conf
+    Config* conf,
+    PipelineController* pipelineController
 ) : state(luaL_newstate()),
     termList(termList),
-    conf(conf)
+    conf(conf),
+    pipelineController(pipelineController)
 {
     luaL_openlibs(state);
 

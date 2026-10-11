@@ -1,6 +1,7 @@
 #include "LuaFixture.hpp"
 
 #include "catch2/catch_test_macros.hpp"
+#include "kitsune/automation/PipelineController.hpp"
 
 #include <fstream>
 
@@ -12,12 +13,14 @@ LuaFixture::LuaFixture()
                 .configRoot = "./test-data/config"
             }
         }),
+      pipelineController(conf),
       dir(conf.envConfig.configRoot, true),
       api(
           // TODO: termList = nullptr is going to cause problems for at least a few of the automation APIs, but I'm not
           // sure how I can best test this part. Maybe with a mock TermList? It is a pointer, so would be doable
           nullptr,
-          &conf
+          &conf,
+          &pipelineController
       )
 {}
 

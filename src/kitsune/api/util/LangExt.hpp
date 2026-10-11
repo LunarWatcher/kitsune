@@ -24,4 +24,9 @@ extern void iterateTable(
 
 extern LUA_INTEGER length(lua_State* L, LUA_INTEGER stackIdx);
 
+/**
+ * Dumps the stack to stdout. Should only be used for debug purposes
+ */
+extern void dumpStack(lua_State* L);
+
 }

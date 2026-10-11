@@ -16,9 +16,10 @@ MainWindow::MainWindow(
     ),
     terminals(modeController),
     modeline(modeController, this),
+    pipelineController(conf),
     root(Gtk::Orientation::VERTICAL, 0),
     api(
-        &terminals, &conf
+        &terminals, &conf, &pipelineController
     )
 {
     api.loadConfig(envConfig.configRoot);
@@ -38,7 +39,7 @@ MainWindow::MainWindow(
     // Init event-driven stuff
     modeController->setMode(Mode::Normal);
 
-    api.run("../.kitsune/pipelines/dev.lua");
+    pipelineController.loadPipelines(&api);
 }
 
 void MainWindow::loadCSS() {

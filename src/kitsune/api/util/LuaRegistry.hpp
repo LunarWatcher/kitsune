@@ -17,6 +17,11 @@ extern void init(lua_State* L);
 struct WithRegistry {
 private:
     bool released = false;
+
+    /**
+     * Tracks where the registry is placed on the stack for stable popping  
+     */
+    int pos;
     lua_State* state;
 public:
     [[nodiscard(

@@ -1,6 +1,5 @@
 #include "TaskGraph.hpp"
 
-#include <queue>
 #include <format>
 
 namespace kitsune {

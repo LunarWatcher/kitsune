@@ -14,6 +14,7 @@ void LuaRegistry::init(lua_State* L) {
 LuaRegistry::WithRegistry::WithRegistry(lua_State* L) : state(L) {
     lua_pushstring(L, RegistryKey.c_str());
     lua_gettable(L, LUA_REGISTRYINDEX);
+    pos = lua_gettop(L);
 }
 
 LuaRegistry::WithRegistry::~WithRegistry() {
@@ -26,7 +27,7 @@ void LuaRegistry::WithRegistry::release() {
     }
     released = true;
 
-    lua_pop(state, -1);
+    lua_remove(state, pos);
 }
 
 // TODO: is this really the best way to go about this? It's much more state-driven, which I like, but is that really

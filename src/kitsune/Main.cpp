@@ -1,5 +1,6 @@
 #include "gtkmm/application.h"
 #include "kitsune/app/KitsuneWindow.hpp"
+#include "minilog/minilog.hpp"
 
 #include <gtkmm.h>
 
@@ -13,7 +14,10 @@ int main(int argc, char** argv) {
 
     CLI12_PARSE(app, argc, argv);
 
-    // The docs says this is fine: https://developer.gnome.org/documentation/tutorials/application-id.html
+    // TODO: CLI gate
+    minilog::setLevel(minilog::Level::Debug);
+
+    // The docs say this is fine: https://developer.gnome.org/documentation/tutorials/application-id.html
     auto gui = Gtk::Application::create(
         "org.codeberg.lunarwatcher.kitsune",
         Gio::Application::Flags::NON_UNIQUE
