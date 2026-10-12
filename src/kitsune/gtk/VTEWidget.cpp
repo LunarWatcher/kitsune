@@ -1,4 +1,5 @@
 #include "VTEWidget.hpp"
+#include "glibmm/main.h"
 #include "kitsune/theming/TermColour.hpp"
 #include "minilog/minilog.hpp"
 #include <vte/vte.h>
@@ -85,28 +86,42 @@ void VTEWidget::spawn(const std::vector<std::string>& command) {
         throw std::runtime_error("Cannot run empty command");
     }
 
-    std::vector<gchar*> converted;
-    converted.reserve(command.size() + 1);
-    for (auto& str : command) {
-        converted.push_back((gchar*) str.c_str());
-    }
-    converted.push_back(nullptr);
-
     state = VTEState::PreLaunch;
-    vte_terminal_spawn_async(
-        VTE_TERMINAL(terminal),
-        VTE_PTY_DEFAULT,
-        nullptr,
-        (gchar**) converted.data(),
-        nullptr,
-        // Required for the child-exited signal
-        GSpawnFlags::G_SPAWN_DO_NOT_REAP_CHILD,
-        nullptr, nullptr,
-        nullptr,
-        -1,
-        nullptr,
-        termCallback,
-        this
+    // Forces the terminal spawning to run on the main thread, because gtk isn't multithreaded
+    // Didn't cause problems in local testing, but there be dragons without this apparently:
+    // https://stackoverflow.com/a/60949270
+    //
+    // The rest of the VTE calls are async anyway, and we observe the results of that via variables stored in this
+    // instance. Syncing isn't important, since all we risk doing is wasting a *gasp* whole entire second.
+    Glib::signal_timeout().connect(
+        [this, command]() {
+
+            std::vector<gchar*> converted;
+            converted.reserve(command.size() + 1);
+            for (auto& str : command) {
+                converted.push_back((gchar*) str.c_str());
+            }
+            converted.push_back(nullptr);
+
+            vte_terminal_spawn_async(
+                VTE_TERMINAL(terminal),
+                VTE_PTY_DEFAULT,
+                nullptr,
+                (gchar**) converted.data(),
+                nullptr,
+                // Required for the child-exited signal
+                GSpawnFlags::G_SPAWN_DO_NOT_REAP_CHILD,
+                nullptr, nullptr,
+                nullptr,
+                -1,
+                nullptr,
+                termCallback,
+                this
+            );
+
+            return false;
+        },
+        0
     );
 }
 
