@@ -38,12 +38,12 @@ std::expected<bool, std::string> TaskGraph::push(
 
         // Insert all the dependencies from the previous level
         task->transitiveDependencies.insert(
-            task->transitiveDependencies.end(),
-            it->second->transitiveDependencies.begin()
+            it->second->transitiveDependencies.begin(),
+            it->second->transitiveDependencies.end()
         );
         task->transitiveDependencies.insert(
-            task->transitiveDependencies.end(),
-            it->second->depends.begin()
+            it->second->depends.begin(),
+            it->second->depends.end()
         );
     }
 
