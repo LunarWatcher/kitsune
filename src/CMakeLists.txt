@@ -10,6 +10,7 @@ add_library(kitsunesrc STATIC
 
     kitsune/automation/AutomationApi.cpp
     kitsune/automation/PipelineController.cpp
+    kitsune/automation/graph/Executor.cpp
     kitsune/automation/graph/TaskGraph.cpp
 
     kitsune/components/TermList.cpp

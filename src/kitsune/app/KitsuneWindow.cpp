@@ -30,10 +30,6 @@ MainWindow::MainWindow(
     initRootContainer();
     loadCSS();
 
-    for (size_t i = 0; i < 3; ++i) {
-        terminals.addTerminal(conf);
-    }
-
     add_controller(fallbackInputProcessor);
 
     // Init event-driven stuff

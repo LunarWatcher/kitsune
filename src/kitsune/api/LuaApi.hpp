@@ -48,8 +48,8 @@ public:
     TermList* getTermList() { return termList; }
     Config* getConfig() { return conf; }
     PipelineController* getPipelineController() { return pipelineController; }
-    // TODO: this has too much business logic attached to it, it should be separated
 
+    lua_State* getState() { return state; }
 };
 
 }

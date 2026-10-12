@@ -1,8 +1,31 @@
 #include "VTEWidget.hpp"
 #include "kitsune/theming/TermColour.hpp"
+#include "minilog/minilog.hpp"
 #include <vte/vte.h>
 
 namespace kitsune {
+
+static void termCallback(VteTerminal* term, GPid pid, GError* error, gpointer udata) {
+    VTEWidget* widget = (VTEWidget*) udata;
+
+    if (pid == -1) {
+        widget->state = VTEState::LaunchFail;
+    } else {
+        widget->state = VTEState::Running;
+        vte_terminal_watch_child(term, pid);
+    }
+}
+
+static void childExit(VteTerminal* term, gint status, gpointer udata) {
+    VTEWidget* widget = (VTEWidget*) udata;
+
+    minilog::debug("Child proc exited with {}", status);
+    if (status == 0) {
+        widget->state = VTEState::ExitOk;
+    } else {
+        widget->state = VTEState::ExitError;
+    }
+}
 
 std::expected<std::shared_ptr<VTEWidget>, std::string> VTEWidget::create(
     const Config& conf
@@ -20,6 +43,13 @@ std::expected<std::shared_ptr<VTEWidget>, std::string> VTEWidget::create(
 
 VTEWidget::VTEWidget(const Config& conf, GtkWidget* terminal) noexcept : terminal(terminal) {
     this->widget = Glib::wrap(terminal, false);
+
+    g_signal_connect(
+        terminal,
+        "child-exited",
+        G_CALLBACK(childExit),
+        this
+    );
 
     applyTheming(conf);
 }
@@ -62,19 +92,21 @@ void VTEWidget::spawn(const std::vector<std::string>& command) {
     }
     converted.push_back(nullptr);
 
+    state = VTEState::PreLaunch;
     vte_terminal_spawn_async(
         VTE_TERMINAL(terminal),
         VTE_PTY_DEFAULT,
         nullptr,
         (gchar**) converted.data(),
         nullptr,
-        (GSpawnFlags) 0,
+        // Required for the child-exited signal
+        GSpawnFlags::G_SPAWN_DO_NOT_REAP_CHILD,
         nullptr, nullptr,
         nullptr,
         -1,
         nullptr,
-        nullptr,
-        nullptr
+        termCallback,
+        this
     );
 }
 

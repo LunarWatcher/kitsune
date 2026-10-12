@@ -106,4 +106,25 @@ void TermList::addTerminal(const Config& conf) {
     );
 }
 
+Glib::RefPtr<TerminalModel> TermList::addBlankTerminal(
+    const Config& conf,
+    const std::string& name
+) {
+    static std::atomic<size_t> i = 0;
+    minilog::debug("Adding new terminal ({})", name);
+    // To my great annoyance, under GTK4, Glib::RefPtr is literally just an std::shared_ptr
+    auto ptr = Glib::make_refptr_for_instance<TerminalModel>(
+        new TerminalModel(
+            name,
+            conf,
+            modeController
+        )
+    );
+    ptr->page = this->termContainer.add(*ptr->terminalView->ptr(), std::to_string(++i));
+    this->dataModel->append(
+        ptr
+    );
+    return ptr;
+}
+
 }

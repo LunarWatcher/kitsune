@@ -13,6 +13,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<TaskGraph>> pipelines;
     Config& conf;
 
+    std::vector<std::shared_ptr<TaskRunner>> runners;
+
     LuaApi* api;
 public:
     PipelineController(

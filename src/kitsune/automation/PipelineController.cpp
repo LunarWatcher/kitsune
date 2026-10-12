@@ -26,10 +26,31 @@ void PipelineController::loadPipelines(LuaApi* api) {
             api->run(path);
         }
     }
+
+    start();
 }
 
 void PipelineController::start() {
-    
+    // TODO: this should be linked to a button that actually starts a specific pipeline rather than auto meaning run on
+    // load. Run on load doesn't scale well if there's a lot of pipelines that may or may not be applicable for a
+    // run. This will also require rewriting the ListView to support a tree, so the root task can be linked up with
+    // buttons in place of the terminal or something.
+    for (auto& [_, graph] : pipelines) {
+        auto tasks = graph->getTasks();
+        std::vector<std::string> runTaskIds;
+
+        for (auto& [_, task] : tasks) {
+            if (task->runSpec == Run::Auto) {
+                runTaskIds.push_back(task->id);
+            }
+        }
+
+        if (!runTaskIds.empty()) {
+            runners.push_back(
+                graph->start(runTaskIds, this->api)
+            );
+        }
+    }
 }
 
 }

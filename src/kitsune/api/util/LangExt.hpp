@@ -3,10 +3,11 @@
 #include "lua.hpp"
 
 #include <functional>
+#include <string>
 
 namespace kitsune::util {
 
-template <typename StringType>
+template <typename StringType = std::string>
 StringType getStringArg(lua_State* L, int arg) {
     size_t len;
     auto str = luaL_checklstring(L, arg, &len);

@@ -1,14 +1,18 @@
 #pragma once
 
 #include "kitsune/automation/graph/ExecutionEnums.hpp"
-#include "kitsune/model/TerminalModel.hpp"
+#include "Executor.hpp"
 #include <lua.hpp>
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 namespace kitsune {
+
+class LuaApi;
+class TaskRunner;
 
 /**
  * Currently just a wrapper around an std::string, but I want to expand this into more involved input specs in the
@@ -18,23 +22,16 @@ struct InputDescriptor {
     std::string description;
 };
 
-struct Hooks {
-    lua_CFunction onLive = nullptr;
-    lua_CFunction onTerminated = nullptr;
-};
-
 struct Task {
     const int luaRefKey;
-    
+
     const std::string id;
     std::string displayName;
 
-    std::vector<std::string> depends;
-    std::map<std::string, std::variant<lua_CFunction, std::string>> env;
+    std::unordered_set<std::string> depends;
+    std::unordered_set<std::string> transitiveDependencies;
+
     std::map<std::string, InputDescriptor> inputs;
-    
-    lua_CFunction command = nullptr;
-    lua_CFunction livenessProbe = nullptr;
 
     std::optional<std::string> workingDirectory;
 
@@ -45,9 +42,9 @@ struct Task {
     Rerun rerunSpec = Rerun::IfCompleted;
     Notify notifySpec = Notify::Never;
 
-    Hooks hooks;
+    Executor executor;
 
-    Glib::RefPtr<TerminalModel> commandExecutionState;
+    void run(lua_State* L);
 };
 
 // TODO: Rename to pipeline
@@ -58,7 +55,17 @@ private:
 public:
     TaskGraph(const std::string& name) : name(name) {}
 
-    std::expected<bool, std::string> push(const std::shared_ptr<Task>& task);
+    std::expected<bool, std::string> push(
+        const std::shared_ptr<Task>& task,
+        LuaApi* api
+    );
+
+    std::shared_ptr<TaskRunner> start(
+        const std::vector<std::string>& taskList,
+        LuaApi* api
+    );
+
+    const decltype(tasks)& getTasks() { return tasks;}
 };
 
 }

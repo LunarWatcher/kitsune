@@ -22,7 +22,8 @@ pipeline:task(
         env = {
             test = "value",
             test2 = function() return "trans rights" end
-        }
+        },
+        run = Run.Auto,
     }
 )
 pipeline:task(
@@ -31,6 +32,8 @@ pipeline:task(
         command = function(executor, inputs)
             executor:command({"./bin/kitsune"})
         end,
-        run = Run.Auto,
+        -- Note to self: auto-running kitsune is a fork bomb at this time, because there's no way to request a pipeline
+        -- to run
+        -- run = Run.Auto,
     }
 )

@@ -33,6 +33,10 @@ public:
 
     Gtk::Widget* root() { return &rootContainer; }
     void addTerminal(const Config& conf);
+    Glib::RefPtr<TerminalModel> addBlankTerminal(
+        const Config& conf,
+        const std::string& name
+    );
 };
 
 }

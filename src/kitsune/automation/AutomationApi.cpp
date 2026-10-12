@@ -38,13 +38,10 @@ int AutomationApi::createTask(lua_State* L) {
         if (k == "name") {
             std::string v = util::getStringArg<std::string>(L, -1);
             task->displayName = v;
-        } else if (k == "command") {
-            auto func = lua_tocfunction(L, -1);
-            task->command = func;
         } else if (k == "depends") {
             luaL_argcheck(L, lua_type(L, -1) == LUA_TTABLE, 3, "depends must be an array");
             util::iterateTable(L, 5, [&]() {
-                task->depends.push_back(util::getStringArg<std::string>(L, -1));
+                task->depends.insert(util::getStringArg<std::string>(L, -1));
             });
         } else if (k == "run") {
             auto v = luaL_checkinteger(L, -1);
@@ -77,22 +74,14 @@ int AutomationApi::createTask(lua_State* L) {
             default:
                 luaL_argerror(L, 3, "run must be one of the Run enum values.");
             }
-        } else if (k == "liveness") {
-            auto func = lua_tocfunction(L, -1);
-            task->livenessProbe = func;
-        } else if (k == "env") {
-            luaL_argcheck(L, lua_type(L, -1) == LUA_TTABLE, 3, "env must be a table");
-            util::iterateTable(L, 5, [&]() {
-                auto k = util::getStringArg<std::string>(L, -2);
-                auto type = lua_type(L, -1);
-                if (type == LUA_TSTRING) {
-                    task->env[std::move(k)] = std::move(util::getStringArg<std::string>(L, -1));
-                } else if (type == LUA_TFUNCTION) {
-                    task->env[std::move(k)] = lua_tocfunction(L, -1);
-                } else {
-                    luaL_argerror(L, 3, "env values must be a string or function");
-                }
-            });
+        } else if (
+            k == "liveness"
+            || k == "env"
+            || k == "hooks"
+            || k == "command"
+        ) {
+            // We cannot process these because there isn't a way to reference Lua functions in C code. They'll instead
+            // be loaded from the registry
         } else if (k == "workingDirectory") {
             task->workingDirectory = util::getStringArg<std::string>(L, -1);
         } else if (k == "inputs") {
@@ -120,18 +109,6 @@ int AutomationApi::createTask(lua_State* L) {
             default:
                 luaL_argerror(L, 3, "run must be one of the Run enum values.");
             }
-        } else if (k == "hooks") {
-            luaL_argcheck(L, lua_type(L, -1) == LUA_TTABLE, 3, "inputs must be a table");
-            util::iterateTable(L, 5, [&]() {
-                auto k = util::getStringArg<std::string>(L, -2);
-                if (k == "onLive") {
-                    task->hooks.onLive = lua_tocfunction(L, -1);
-                } else if (k == "onTerminated") {
-                    task->hooks.onTerminated = lua_tocfunction(L, -1);
-                } else {
-                    luaL_error(L, "Found unrecognized arg passed to hooks: %s", k.c_str());
-                }
-            });
         } else {
             luaL_error(L, "Found unrecognized argument passed to pipeline::task(): %s", k.c_str());
         }
@@ -141,7 +118,10 @@ int AutomationApi::createTask(lua_State* L) {
         task->displayName = task->id;
     }
 
-    auto result = (**taskGraph).push(task);
+    auto result = (**taskGraph).push(
+        task,
+        api
+    );
     if (!result) {
         return luaL_error(
             L, "%s", result.error().c_str()
@@ -164,6 +144,36 @@ int AutomationApi::newPipeline(lua_State* L) {
     *pipelineUdata = pipeline.get();
 
     return 1;
+}
+
+int AutomationApi::executor::spawnShell(lua_State* L) {
+    auto** executor = (Executor**) luaL_checkudata(L, 1, UDataExecutor);
+
+    auto command = util::getStringArg(L, 2);
+    // TODO: handle opt shell arg 
+
+    (**executor).spawnShell(
+        command
+    );
+    
+    return 0;
+}
+
+int AutomationApi::executor::spawnCommand(lua_State* L) {
+    auto** executor = (Executor**) luaL_checkudata(L, 1, UDataExecutor);
+
+    std::vector<std::string> command;
+
+    util::iterateTable(L, 2, [&]() {
+        command.push_back(
+            util::getStringArg(L, -1)
+        );
+    });
+
+    (**executor).spawnCommand(
+        command
+    );
+    return 0;
 }
 
 int AutomationApi::luaopen_kitsune_pipelines(lua_State* L) {
@@ -206,6 +216,13 @@ int AutomationApi::luaopen_kitsune_pipelines(lua_State* L) {
         { nullptr, nullptr },
     };
     util::registerMetatable(L, pipelineFuncs, UDataPipeline);
+
+    static const luaL_Reg executorFuncs[] {
+        { "shell", executor::spawnShell },
+        { "command", executor::spawnCommand },
+        { nullptr, nullptr },
+    };
+    util::registerMetatable(L, executorFuncs, UDataExecutor);
 
     return 1;
 }
