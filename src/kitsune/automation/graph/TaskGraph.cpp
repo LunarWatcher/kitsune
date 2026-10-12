@@ -22,6 +22,13 @@ std::expected<bool, std::string> TaskGraph::push(
     //
     // This is a DAG
 
+
+    if (task->id == "") {
+        return std::unexpected("Invalid ID!");
+    } else if (tasks.contains(task->id)) {
+        return std::unexpected(std::format("ID {} is already in use in this task graph", task->id));
+    }
+
     for (auto& dep : task->depends) {
         if (dep == task->id) {
             return std::unexpected(
