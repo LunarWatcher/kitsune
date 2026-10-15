@@ -109,8 +109,14 @@ void VTEWidget::spawn(const std::vector<std::string>& command) {
                 nullptr,
                 (gchar**) converted.data(),
                 nullptr,
-                // Required for the child-exited signal
-                GSpawnFlags::G_SPAWN_DO_NOT_REAP_CHILD,
+                // TODO: DO_NOT_REAP_CHILD is allegedly required for the child-exited signal, but it seems to work
+                // without it. Paradoxically, having the flag causes the app to refuse to exit, presumably because it's
+                // waiting on child processes that we aren't terminating properly.
+                // Both options seem to cause all kinds of error logging, so no clue what I'm supposed to do here.
+                // https://gnome.pages.gitlab.gnome.org/vte/gtk4/method.Terminal.watch_child.html says to use it, so I
+                // assume I do have to, but I don't understand what I am supposed to do. Call waitpid after it exits?
+                // There's something fucky with the async call and the flags here I think
+                GSpawnFlags::G_SPAWN_DEFAULT,
                 nullptr, nullptr,
                 nullptr,
                 -1,

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "giomm/liststore.h"
 #include "glibmm/refptr.h"
 #include "glibmm/ustring.h"
 #include "gtkmm/stackpage.h"
@@ -7,7 +8,13 @@
 #include "kitsune/gtk/VTEWidget.hpp"
 #include "minilog/minilog.hpp"
 #include <memory>
+
 namespace kitsune {
+
+struct TaskInfo {
+    std::string pipelineKey;
+    std::string taskKey;
+};
 
 struct TerminalModel : public Glib::Object {
     Glib::ustring termName;
@@ -17,6 +24,12 @@ struct TerminalModel : public Glib::Object {
     Glib::RefPtr<Gtk::StackPage> page;
     Glib::RefPtr<ModalInputProcessor> inputProc;
     Glib::RefPtr<ModalInputProcessor> rowProc;
+
+    /**
+     * Contains IDs to a corresponding pipeline and task, provided this view was started by a scripted pipeline.
+     * For manual terminals, this is undefined.
+     */
+    std::optional<TaskInfo> taskInfo;
 
     TerminalModel(
         const Glib::ustring& termName,
@@ -45,6 +58,14 @@ struct TerminalModel : public Glib::Object {
             );
         }
     }
+};
+
+struct PipelineModel : public Glib::Object {
+    std::optional<std::string> pipelineKey;
+    std::string displayName;
+
+    std::shared_ptr<Gio::ListStore<TerminalModel>> model = Gio::ListStore<TerminalModel>::create();
+    std::vector<std::shared_ptr<TerminalModel>> items;
 };
 
 }
