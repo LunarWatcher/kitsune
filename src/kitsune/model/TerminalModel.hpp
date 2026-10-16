@@ -16,14 +16,26 @@ struct TaskInfo {
     std::string taskKey;
 };
 
-struct TerminalModel : public Glib::Object {
+struct PipelineModelCommon {
+    Glib::RefPtr<ModalInputProcessor> rowProc;
+
+    PipelineModelCommon(
+        const std::shared_ptr<ModeController>& modeController
+    ) : rowProc(
+        std::make_shared<ModalInputProcessor>(
+            modeController,
+            ModalInputType::ForwardNavigation
+        )
+    ) {}
+};
+
+struct TerminalModel : public Glib::Object, public PipelineModelCommon {
     Glib::ustring termName;
     // TODO: consider adding a separate identifier so we can source terminal title changes into this datamodel
     std::shared_ptr<VTEWidget> terminalView;
 
     Glib::RefPtr<Gtk::StackPage> page;
     Glib::RefPtr<ModalInputProcessor> inputProc;
-    Glib::RefPtr<ModalInputProcessor> rowProc;
 
     /**
      * Contains IDs to a corresponding pipeline and task, provided this view was started by a scripted pipeline.
@@ -35,15 +47,13 @@ struct TerminalModel : public Glib::Object {
         const Glib::ustring& termName,
         const Config& config,
         const std::shared_ptr<ModeController>& modeController
-    ) : termName(termName),
+    ) : PipelineModelCommon(modeController),
+        termName(termName),
         inputProc(std::make_shared<ModalInputProcessor>(
                 modeController,
                 ModalInputType::InsertOnly
-            )),
-        rowProc(std::make_shared<ModalInputProcessor>(
-                modeController,
-                ModalInputType::ForwardNavigation
             ))
+
     {
         auto res = VTEWidget::create(config);
 
@@ -60,12 +70,16 @@ struct TerminalModel : public Glib::Object {
     }
 };
 
-struct PipelineModel : public Glib::Object {
+struct PipelineModel : public Glib::Object, public PipelineModelCommon {
     std::optional<std::string> pipelineKey;
     std::string displayName;
 
     std::shared_ptr<Gio::ListStore<TerminalModel>> model = Gio::ListStore<TerminalModel>::create();
     std::vector<std::shared_ptr<TerminalModel>> items;
+
+    PipelineModel(
+        const std::shared_ptr<ModeController>& modeController
+    ) : PipelineModelCommon(modeController) {}
 };
 
 }

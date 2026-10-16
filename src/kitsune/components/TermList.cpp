@@ -83,11 +83,24 @@ TermList::TermList(
         if (!ptr) {
             return;
         }
+
+        auto commonItem = std::dynamic_pointer_cast<PipelineModelCommon>(ptr->get_item());
+        if (commonItem == nullptr) {
+            throw std::runtime_error("TermList received row without PipelineModelCommon!");
+        }
+
         auto* expander = dynamic_cast<Gtk::TreeExpander*>(listItem->get_child());
         // seems to be loadbearing for list association. I don't understand why, and the docs are too fucking atrocious
-        if (expander) {
-            expander->set_list_row(ptr);
+        if (!expander) {
+            minilog::error("Got expander == null!");
+            return;
         }
+
+        expander->set_list_row(ptr);
+        expander->add_controller(
+            commonItem->rowProc
+        );
+
         auto* label = (Gtk::Label*) expander->get_child();
         label->set_wrap(true);
         label->set_css_classes({ "pad-medium" });
@@ -95,7 +108,6 @@ TermList::TermList(
         if (auto termPtr = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item()); termPtr != nullptr) {
             minilog::info("Setting up for TerminalModel");
             label->set_text(termPtr->termName);
-            label->add_controller(termPtr->rowProc);
         } else if (auto pipelinePtr = std::dynamic_pointer_cast<PipelineModel>(ptr->get_item()); pipelinePtr != nullptr) {
             minilog::info("Setting up for PipelineModel: {}", ptr->is_expandable());
             label->set_text(pipelinePtr->displayName);
@@ -106,15 +118,16 @@ TermList::TermList(
             minilog::error("Factory received unknown type");
         }
     });
-    // TODO: This currently doesn't work due to inconsistent state in particularly the controller. MIght need to
-    // superclass the two data models so we can provide the processors globally for both of them. Or at least the common
-    // one for the row entry
-    // factory->signal_unbind().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
-    //     auto data = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item());
-
-    //     auto* label = (Gtk::Label*) ptr->get_child();
-    //     label->remove_controller(data->rowProc);
-    // });
+    factory->signal_unbind().connect([this](const Glib::RefPtr<Gtk::ListItem>& listItem) {
+        auto ptr = std::dynamic_pointer_cast<Gtk::TreeListRow>(listItem->get_item());
+        if (!ptr) {
+            return;
+        }
+        auto* expander = dynamic_cast<Gtk::TreeExpander*>(listItem->get_child());
+        expander->remove_controller(
+            ((PipelineModelCommon*) ptr->get_item().get())->rowProc
+        );
+    });
     this->rootView.set_factory(factory);
     this->rootView.set_hexpand(false);
     this->rootView.set_vexpand(true);
@@ -150,7 +163,7 @@ void TermList::addTerminal(const Config& conf) {
     );
     ptr->terminalView->spawn({ "/usr/bin/zsh" });
     ptr->page = this->termContainer.add(*ptr->terminalView->ptr(), std::to_string(++i));
-    auto pipeline = std::make_shared<PipelineModel>();
+    auto pipeline = std::make_shared<PipelineModel>(modeController);
     pipeline->displayName = std::format("Manual terminal #{}", i.load());
     this->rootDataModel->append(pipeline);
     pipeline->model->append(ptr);
@@ -174,7 +187,7 @@ Glib::RefPtr<TerminalModel> TermList::addBlankTerminal(
     );
     ptr->page = this->termContainer.add(*ptr->terminalView->ptr(), std::to_string(++i));
     // TODO: Look up existing pipelines
-    auto pipeline = std::make_shared<PipelineModel>();
+    auto pipeline = std::make_shared<PipelineModel>(this->modeController);
     pipeline->model = Gio::ListStore<TerminalModel>::create();
     pipeline->displayName = std::format("Pipeline for task {}", name);
     activePipelines[pipeline->displayName] = pipeline;
