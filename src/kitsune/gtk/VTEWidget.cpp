@@ -13,7 +13,6 @@ static void termCallback(VteTerminal* term, GPid pid, GError* error, gpointer ud
         widget->state = VTEState::LaunchFail;
     } else {
         widget->state = VTEState::Running;
-        // vte_terminal_watch_child(term, pid);
     }
 }
 
@@ -33,7 +32,6 @@ std::expected<std::shared_ptr<VTEWidget>, std::string> VTEWidget::create(
 ) {
     auto* terminal = vte_terminal_new();
     if (terminal == nullptr) {
-        // TODO: can this even happen?
         return std::unexpected("Failed to init VTE");
     }
 
