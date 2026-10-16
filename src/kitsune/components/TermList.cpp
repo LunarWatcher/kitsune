@@ -171,29 +171,26 @@ void TermList::addTerminal(const Config& conf) {
 
 Glib::RefPtr<TerminalModel> TermList::addBlankTerminal(
     const Config& conf,
-    const std::string& name
+    const std::shared_ptr<Task>& task,
+    const TaskGraph* graph
 ) {
-    // TODO: this conflicts with addTerminal and means addTerminal cannot be called. Should probably be replaced
-    // outright in this function in particular in favour of using <pipeline>-<task ID> as the key
-    static std::atomic<size_t> i = 0;
-    minilog::debug("Adding new terminal ({})", name);
+    std::string uniqueId = std::format("{}/{}", graph->getName(), task->getId());
+    minilog::debug("Adding new terminal ({})", uniqueId);
     // To my great annoyance, under GTK4, Glib::RefPtr is literally just an std::shared_ptr
     auto ptr = Glib::make_refptr_for_instance<TerminalModel>(
         new TerminalModel(
-            name,
+            task->getDisplayName(),
             conf,
             modeController
         )
     );
-    ptr->page = this->termContainer.add(*ptr->terminalView->ptr(), std::to_string(++i));
-    // TODO: Look up existing pipelines
-    auto pipeline = std::make_shared<PipelineModel>(this->modeController);
-    pipeline->model = Gio::ListStore<TerminalModel>::create();
-    pipeline->displayName = std::format("Pipeline for task {}", name);
-    activePipelines[pipeline->displayName] = pipeline;
-    this->rootDataModel->append(pipeline);
+    ptr->page = this->termContainer.add(
+        *ptr->terminalView->ptr(),
+        uniqueId
+    );
+
+    auto pipeline = getOrCreatePipeline(graph->getName());
     pipeline->model->append(ptr);
-    pipeline->items.push_back(ptr);
     return ptr;
 }
 

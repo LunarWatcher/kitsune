@@ -45,13 +45,16 @@ struct Task {
     Executor executor;
 
     void run(lua_State* L);
+
+    const std::string& getDisplayName() const { return displayName; }
+    const std::string& getId() const { return id; }
 };
 
 // TODO: Rename to pipeline
 class TaskGraph {
 private:
     std::unordered_map<std::string, std::shared_ptr<Task>> tasks;
-    std::string name;
+    const std::string name;
 public:
     TaskGraph(const std::string& name) : name(name) {}
 
@@ -65,7 +68,8 @@ public:
         LuaApi* api
     );
 
-    const decltype(tasks)& getTasks() { return tasks;}
+    const std::string& getName() const { return name; }
+    const decltype(tasks)& getTasks() const { return tasks; }
 };
 
 }

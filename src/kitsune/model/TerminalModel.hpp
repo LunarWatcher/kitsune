@@ -75,7 +75,6 @@ struct PipelineModel : public Glib::Object, public PipelineModelCommon {
     std::string displayName;
 
     std::shared_ptr<Gio::ListStore<TerminalModel>> model = Gio::ListStore<TerminalModel>::create();
-    std::vector<std::shared_ptr<TerminalModel>> items;
 
     PipelineModel(
         const std::shared_ptr<ModeController>& modeController

@@ -62,9 +62,11 @@ std::expected<bool, std::string> TaskGraph::push(
         }
     );
 
+    // TODO: this should be delayed until the pipeline is loaded
     task->executor.state = api->getTermList()->addBlankTerminal(
         *api->getConfig(),
-        task->displayName
+        task,
+        this
     );
     tasks[task->id] = task;
 
