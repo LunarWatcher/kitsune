@@ -40,7 +40,6 @@ PUBLIC
 
     stc
     minilog
-    CLI12::CLI12
 
     ${LUA_LIBRARIES}
 )

@@ -8,7 +8,7 @@ void PipelineController::loadPipelines(LuaApi* api) {
 
     for (auto& lookupDir : conf.pipelineLookupLocations) {
         if (!std::filesystem::is_directory(lookupDir)) {
-            minilog::debug("{} is not a folder", lookupDir);
+            minilog::debug("{} is not a folder or does not exist", lookupDir);
             continue;
         }
 
