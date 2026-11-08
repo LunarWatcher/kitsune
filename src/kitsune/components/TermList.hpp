@@ -19,23 +19,20 @@ namespace kitsune {
 
 class TermList {
 private:
+    std::unordered_map<std::string, std::shared_ptr<PipelineModel>> activePipelines;
+    std::shared_ptr<ModalInputProcessor> listInputProcessor;
     std::shared_ptr<ModeController> modeController;
+    std::shared_ptr<TerminalModel> active = nullptr;
 
     Gtk::Paned rootContainer;
     Gtk::ScrolledWindow listOverflow;
     Gtk::ListView rootView;
 
     Gtk::Stack termContainer;
-
-    std::unordered_map<std::string, std::shared_ptr<PipelineModel>> activePipelines;
     
     Glib::RefPtr<Gio::ListStore<PipelineModel>> rootDataModel;
     Glib::RefPtr<Gtk::TreeListModel> dataModel;
     Glib::RefPtr<Gtk::SingleSelection> selectionModel;
-
-    std::shared_ptr<ModalInputProcessor> listInputProcessor;
-
-    std::shared_ptr<TerminalModel> active = nullptr;
 
     std::shared_ptr<PipelineModel> getOrCreatePipeline(const std::string& key) {
         if (auto it = activePipelines.find(key); it != activePipelines.end()) {

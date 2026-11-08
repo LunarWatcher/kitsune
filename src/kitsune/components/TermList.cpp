@@ -123,9 +123,18 @@ TermList::TermList(
         if (!ptr) {
             return;
         }
+        auto commonItem = std::dynamic_pointer_cast<PipelineModelCommon>(ptr->get_item());
+        if (commonItem == nullptr) {
+            throw std::runtime_error("TermList received row without PipelineModelCommon!");
+        }
         auto* expander = dynamic_cast<Gtk::TreeExpander*>(listItem->get_child());
+        // seems to be loadbearing for list association. I don't understand why, and the docs are too fucking atrocious
+        if (!expander) {
+            minilog::error("Got expander == null!");
+            return;
+        }
         expander->remove_controller(
-            ((PipelineModelCommon*) ptr->get_item().get())->rowProc
+            commonItem->rowProc
         );
     });
     this->rootView.set_factory(factory);
