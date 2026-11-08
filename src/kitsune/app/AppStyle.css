@@ -5,6 +5,21 @@ R"SEP(
     --kitsune-black: #1B0C04;
     --kitsune-purple: #7712CF;
     --kitsune-white: white;
+
+    --kitsune-green: #22ec27;
+    --kitsune-red: #f02c2c;
+
+    --kitsune-inactive: #eeeeee;
+    --kitsune-inactive-text: black;
+
+    --kitsune-pending: var(--kitsune-orange);
+    --kitsune-pending-text: black;
+
+    --kitsune-success: var(--kitsune-green);
+    --kitsune-success-text: black;
+
+    --kitsune-error: var(--kitsune-red);
+    --kitsune-error-text: black;
 }
 
 .pad-medium {
@@ -31,5 +46,32 @@ weird, especially in the listview thing) */
 .modeline-root label, .modeline-root text {
     padding: 4px;
 }
+
+.status-indicator.pending,
+.status-indicator.running,
+.status-indicator.done,
+.status-indicator.failed {
+    font-family: monospace;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 2px solid var(--kitsune-purple);
+}
+.status-indicator.pending {
+    background-color: var(--kitsune-inactive);
+    color: var(--kitsune-inactive-text);
+}
+.status-indicator.running {
+    background-color: var(--kitsune-pending);
+    color: var(--kitsune-pending-text);
+}
+.status-indicator.done {
+    background-color: var(--kitsune-success);
+    color: var(--kitsune-success-text);
+}
+.status-indicator.failed {
+    background-color: var(--kitsune-error);
+    color: var(--kitsune-error-text);
+}
+
 
 )SEP"

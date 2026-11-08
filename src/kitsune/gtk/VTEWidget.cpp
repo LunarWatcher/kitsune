@@ -10,9 +10,9 @@ static void termCallback(VteTerminal* term, GPid pid, GError* error, gpointer ud
     VTEWidget* widget = (VTEWidget*) udata;
 
     if (pid == -1) {
-        widget->state = VTEState::LaunchFail;
+        widget->setState(VTEState::LaunchFail);
     } else {
-        widget->state = VTEState::Running;
+        widget->setState(VTEState::Running);
     }
 }
 
@@ -21,9 +21,9 @@ static void childExit(VteTerminal* term, gint status, gpointer udata) {
 
     minilog::debug("Child proc exited with {}", status);
     if (status == 0) {
-        widget->state = VTEState::ExitOk;
+        widget->setState(VTEState::ExitOk);
     } else {
-        widget->state = VTEState::ExitError;
+        widget->setState(VTEState::ExitError);
     }
 }
 
@@ -84,7 +84,7 @@ void VTEWidget::spawn(const std::vector<std::string>& command) {
         throw std::runtime_error("Cannot run empty command");
     }
 
-    state = VTEState::PreLaunch;
+    setState(VTEState::PreLaunch);
     // Forces the terminal spawning to run on the main thread, because gtk isn't multithreaded
     // Didn't cause problems in local testing, but there be dragons without this apparently:
     // https://stackoverflow.com/a/60949270
@@ -137,6 +137,11 @@ std::string VTEWidget::getContent() {
     free(content);
 
     return str;
+}
+
+void VTEWidget::setState(VTEState newState) {
+    this->state = newState;
+    this->runStatusChanged.emit(newState);
 }
 
 }

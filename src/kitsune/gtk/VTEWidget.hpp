@@ -16,7 +16,10 @@ enum class VTEState {
 
 // TODO: can we `: public Gtk::Widget` instead?
 class VTEWidget {
+public:
+    using SignalRunStatusChanged = sigc::signal<void(VTEState)>;
 private:
+    SignalRunStatusChanged runStatusChanged;
     GtkWidget* terminal;
     Gtk::Widget* widget;
 
@@ -40,6 +43,12 @@ public:
     Gtk::Widget* ptr() {
         return widget;
     }
+
+    SignalRunStatusChanged signal_run_status_changed() {
+        return runStatusChanged;
+    }
+
+    void setState(VTEState newState);
 };
 
 }

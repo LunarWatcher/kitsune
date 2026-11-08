@@ -73,8 +73,12 @@ TermList::TermList(
     factory->signal_setup().connect([this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
         minilog::info("Setup called");
         auto expander = Gtk::make_managed<Gtk::TreeExpander>();
-        auto label = Gtk::make_managed<Gtk::Label>();
-        expander->set_child(*label);
+        auto hl = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
+        auto statusLabel = Gtk::make_managed<Gtk::Label>();
+        auto nameLabel = Gtk::make_managed<Gtk::Label>();
+        hl->append(*statusLabel);
+        hl->append(*nameLabel);
+        expander->set_child(*hl);
         ptr->set_child(*expander);
     });
     factory->signal_bind().connect([this](const Glib::RefPtr<Gtk::ListItem>& listItem) {
@@ -101,13 +105,17 @@ TermList::TermList(
             commonItem->rowProc
         );
 
-        auto* label = (Gtk::Label*) expander->get_child();
+        auto* hl = (Gtk::Box*) expander->get_child();
+        auto* statusLabel = (Gtk::Label*) hl->get_children()[0];
+        auto* label = (Gtk::Label*) hl->get_children()[1];
         label->set_wrap(true);
         label->set_css_classes({ "pad-medium" });
 
         if (auto termPtr = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item()); termPtr != nullptr) {
             minilog::info("Setting up for TerminalModel");
             label->set_text(termPtr->termName);
+
+            termPtr->bind(statusLabel);
         } else if (auto pipelinePtr = std::dynamic_pointer_cast<PipelineModel>(ptr->get_item()); pipelinePtr != nullptr) {
             minilog::info("Setting up for PipelineModel: {}", ptr->is_expandable());
             label->set_text(pipelinePtr->displayName);
@@ -136,6 +144,10 @@ TermList::TermList(
         expander->remove_controller(
             commonItem->rowProc
         );
+
+        if (auto termPtr = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item()); termPtr != nullptr) {
+            termPtr->unbind();
+        }
     });
     this->rootView.set_factory(factory);
     this->rootView.set_hexpand(false);

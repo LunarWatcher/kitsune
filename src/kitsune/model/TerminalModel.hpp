@@ -3,6 +3,7 @@
 #include "giomm/liststore.h"
 #include "glibmm/refptr.h"
 #include "glibmm/ustring.h"
+#include "gtkmm/label.h"
 #include "gtkmm/stackpage.h"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
 #include "kitsune/gtk/VTEWidget.hpp"
@@ -42,6 +43,7 @@ struct TerminalModel : public Glib::Object, public PipelineModelCommon {
      * For manual terminals, this is undefined.
      */
     std::optional<TaskInfo> taskInfo;
+    Gtk::Label* statusLabel = nullptr;
 
     TerminalModel(
         const Glib::ustring& termName,
@@ -61,12 +63,57 @@ struct TerminalModel : public Glib::Object, public PipelineModelCommon {
         if (res) {
             terminalView = *res;
             terminalView->ptr()->add_controller(inputProc);
+            terminalView->signal_run_status_changed().connect([this](auto) {
+                // The underlying value is just an enum that we can access directly, and this function is used 
+                setStatus();
+            });
         } else {
             minilog::error(
                 "An error happened while spawning the terminal: {}",
                 res.error().c_str()
             );
         }
+    }
+
+    void setStatus() {
+        if (this->statusLabel == nullptr) {
+            // Not in view
+            return;
+        }
+        auto state = terminalView->state;
+
+        switch (state) {
+        case VTEState::PreLaunch:
+            statusLabel->set_text("P");
+            statusLabel->set_css_classes({"status-indicator", "pending"});
+            break;
+        case VTEState::Running:
+            statusLabel->set_text("R");
+            statusLabel->set_css_classes({"status-indicator", "running"});
+            break;
+        case VTEState::ExitOk:
+            statusLabel->set_text("D");
+            statusLabel->set_css_classes({"status-indicator", "done"});
+            break;
+        case VTEState::ExitError:
+            statusLabel->set_text("E");
+            statusLabel->set_css_classes({"status-indicator", "failed"});
+            break;
+        case VTEState::LaunchFail:
+            statusLabel->set_text("F");
+            statusLabel->set_css_classes({"status-indicator", "failed"});
+            break;
+        }
+    }
+
+    void bind(Gtk::Label* statusLabel) {
+        this->statusLabel = statusLabel;
+
+        setStatus();
+    }
+
+    void unbind() {
+        this->statusLabel = nullptr;
     }
 };
 
