@@ -122,9 +122,16 @@ void Task::run(lua_State* L) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     } else {
+        // TODO: This loop can block application shutdown. We need a bool or something to properly terminate (and the
+        // rest of the task graph needs to care about this as well, since a longer-running task can in theory block
+        // shutdown as well as the code currently stands)
         while (true) {
             auto state = executor.state->terminalView->state;
-            if (state == VTEState::ExitOk) {
+            if (
+                state == VTEState::ExitOk
+                || state == VTEState::ExitError
+                || state == VTEState::LaunchFail
+            ) {
                 break;
             }
             std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -133,7 +140,8 @@ void Task::run(lua_State* L) {
 
     lua_pop(L, lua_gettop(L));
 
-    minilog::info("{} is completed or live.", id);
+    // TODO: Fix log mesasge
+    minilog::info("{} is failed, completed, or live.", id);
 
 }
 

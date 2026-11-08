@@ -27,6 +27,16 @@ pipeline:task(
     }
 )
 pipeline:task(
+    "fail",
+    {
+        command = function(executor, inputs)
+            executor:shell("exit 1")
+        end,
+        depends = { "test" },
+        run = Run.Auto,
+    }
+)
+pipeline:task(
     "run",
     {
         command = function(executor, inputs)
