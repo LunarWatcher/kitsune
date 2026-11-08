@@ -64,7 +64,10 @@ struct TerminalModel : public Glib::Object, public PipelineModelCommon {
             terminalView = *res;
             terminalView->ptr()->add_controller(inputProc);
             terminalView->signal_run_status_changed().connect([this](auto) {
-                // The underlying value is just an enum that we can access directly, and this function is used 
+                // The underlying value is just an enum that we can access directly, and this function may not actually
+                // need to consume it at all.
+                // in retrospect, I'm not entirely sure why I made this callback include the enum, but eh, it doesn't
+                // matter
                 setStatus();
             });
         } else {
