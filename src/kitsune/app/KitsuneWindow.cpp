@@ -14,9 +14,9 @@ MainWindow::MainWindow(
     fallbackInputProcessor(
         new ModalInputProcessor(modeController, ModalInputType::Window)
     ),
-    terminals(modeController),
-    modeline(modeController, this),
     pipelineController(conf),
+    terminals(modeController, &pipelineController),
+    modeline(modeController, this),
     root(Gtk::Orientation::VERTICAL, 0),
     api(
         &terminals, &conf, &pipelineController

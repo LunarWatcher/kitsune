@@ -36,7 +36,9 @@ struct TaskRunner {
 
     ~TaskRunner() {
         luaL_unref(threadState, LUA_REGISTRYINDEX, ref);
+        minilog::debug("About to wait for thread join");
         runControl.join();
+        minilog::debug("Thread join cleared");
     }
 
 };

@@ -3,11 +3,13 @@ R"SEP(
 :root {
     --kitsune-orange: #ED960B;
     --kitsune-black: #1B0C04;
-    --kitsune-purple: #7712CF;
     --kitsune-white: white;
 
     --kitsune-green: #22ec27;
     --kitsune-red: #f02c2c;
+
+    --kitsune-purple: #7712CF;
+    --kitsune-purple-active: #a265d7;
 
     --kitsune-inactive: #eeeeee;
     --kitsune-inactive-text: black;
@@ -22,8 +24,18 @@ R"SEP(
     --kitsune-error-text: black;
 }
 
+button {
+    background-color: var(--kitsune-purple);
+}
+button:hover {
+    background-color: var(--kitsune-purple-active);
+}
+button label {
+    color: white;
+}
+
 .pad-medium {
-    padding: 4px;
+    padding: 0.25rem;
 }
 
 /* Temporary for focus debug (will probably turn this into a permanent CSS rule, looks like focus vs. active is a bit
@@ -44,7 +56,7 @@ weird, especially in the listview thing) */
 }
 
 .modeline-root label, .modeline-root text {
-    padding: 4px;
+    padding: 0.25rem;
 }
 
 .status-indicator.pending,

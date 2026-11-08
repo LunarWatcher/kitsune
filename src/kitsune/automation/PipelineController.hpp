@@ -22,7 +22,8 @@ public:
     ) : conf(conf) {}
 
     void loadPipelines(LuaApi* api);
-    void start();
+    void runPipeline(const std::string& pipelineKey);
+    void runTask(const std::string& pipeline, const std::string& taskId);
     
     std::unordered_map<std::string, std::shared_ptr<TaskGraph>>& getPipelines() { return pipelines; }
 };

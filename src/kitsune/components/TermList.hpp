@@ -1,6 +1,8 @@
 #pragma once
 
 #include "giomm/liststore.h"
+#include "gtkmm/box.h"
+#include "gtkmm/button.h"
 #include "gtkmm/listview.h"
 #include "gtkmm/paned.h"
 #include "gtkmm/singleselection.h"
@@ -14,17 +16,22 @@
 #include "kitsune/automation/graph/TaskGraph.hpp"
 #include "kitsune/model/TerminalModel.hpp"
 #include <unordered_map>
+#include <memory>
 
 namespace kitsune {
 
+class PipelineController;
 class TermList {
 private:
     std::unordered_map<std::string, std::shared_ptr<PipelineModel>> activePipelines;
     std::shared_ptr<ModalInputProcessor> listInputProcessor;
     std::shared_ptr<ModeController> modeController;
-    std::shared_ptr<TerminalModel> active = nullptr;
+    std::shared_ptr<PipelineModelCommon> active = nullptr;
+    PipelineController* pipelineController;
 
-    Gtk::Paned rootContainer;
+    Gtk::Box rootContainer;
+
+    Gtk::Paned termSplitView;
     Gtk::ScrolledWindow listOverflow;
     Gtk::ListView rootView;
 
@@ -34,20 +41,17 @@ private:
     Glib::RefPtr<Gtk::TreeListModel> dataModel;
     Glib::RefPtr<Gtk::SingleSelection> selectionModel;
 
-    std::shared_ptr<PipelineModel> getOrCreatePipeline(const std::string& key) {
-        if (auto it = activePipelines.find(key); it != activePipelines.end()) {
-            return it->second;
-        }
+    Gtk::Box taskBarContainer;
+    Gtk::Button runBtn;
 
-        auto pipeline = std::make_shared<PipelineModel>(this->modeController);
-        pipeline->displayName = key;
-        activePipelines[key] = pipeline;
-        rootDataModel->append(pipeline);
-        return pipeline;
-    }
+    void initActionBar();
+    void initTermView();
+
+    std::shared_ptr<PipelineModel> getOrCreatePipeline(const std::string &key);
 public:
     TermList(
-        const std::shared_ptr<ModeController>& modeController
+        const std::shared_ptr<ModeController>& modeController,
+        PipelineController* pipelineController
     );
 
     Gtk::Widget* root() { return &rootContainer; }

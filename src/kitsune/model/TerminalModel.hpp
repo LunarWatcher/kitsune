@@ -28,6 +28,7 @@ struct PipelineModelCommon {
             ModalInputType::ForwardNavigation
         )
     ) {}
+    virtual ~PipelineModelCommon() = default;
 };
 
 struct TerminalModel : public Glib::Object, public PipelineModelCommon {
@@ -48,13 +49,15 @@ struct TerminalModel : public Glib::Object, public PipelineModelCommon {
     TerminalModel(
         const Glib::ustring& termName,
         const Config& config,
-        const std::shared_ptr<ModeController>& modeController
+        const std::shared_ptr<ModeController>& modeController,
+        const std::optional<TaskInfo>& taskInfo = std::nullopt
     ) : PipelineModelCommon(modeController),
         termName(termName),
         inputProc(std::make_shared<ModalInputProcessor>(
                 modeController,
                 ModalInputType::InsertOnly
-            ))
+            )),
+        taskInfo(taskInfo)
 
     {
         auto res = VTEWidget::create(config);

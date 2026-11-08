@@ -20,9 +20,9 @@ private:
     std::shared_ptr<ModeController> modeController;
     std::shared_ptr<ModalInputProcessor> fallbackInputProcessor;
 
+    PipelineController pipelineController;
     TermList terminals;
     Modeline modeline;
-    PipelineController pipelineController;
 
     kitsune::Config conf;
 
