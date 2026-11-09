@@ -75,7 +75,7 @@ bool Task::run(
     lua_pop(L, lua_gettop(L));
 
     if (!running.load()) {
-        minilog::warn("Pipeline containing {} is shutting down");
+        minilog::warn("Pipeline containing {} is shutting down", id);
         return false;
     }
 

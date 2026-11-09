@@ -15,6 +15,8 @@ private:
 
     std::vector<std::shared_ptr<TaskRunner>> runners;
 
+    void startRunner(std::shared_ptr<TaskGraph>& graph, const std::vector<std::string>& tasks);
+
     LuaApi* api;
 public:
     PipelineController(

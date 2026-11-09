@@ -47,23 +47,28 @@ void TermList::initActionBar() {
         if (!this->active) {
             // TODO: A toast would be nice, but that's part of libadwaita, which I haven't bothered looking up C++
             // wrappers for.
+            minilog::error("No active item");
             return;
         }
 
-        if (auto term = std::dynamic_pointer_cast<TerminalModel>(active);
-            term != nullptr
-        ) {
-            if (!term->taskInfo.has_value()) {
-                minilog::error("{} is not a managed terminal", term->termName.c_str());
-                return;
+        try {
+            if (auto term = std::dynamic_pointer_cast<TerminalModel>(active);
+                term != nullptr
+               ) {
+                if (!term->taskInfo.has_value()) {
+                    minilog::error("{} is not a managed terminal", term->termName.c_str());
+                    return;
+                }
+                pipelineController->runTask(term->taskInfo->pipelineKey, term->taskInfo->taskKey);
+            } else if (auto pipeline = std::dynamic_pointer_cast<PipelineModel>(active);
+                pipeline != nullptr
+                      ) {
+                pipelineController->runPipeline(*pipeline->pipelineKey);
+            } else {
+                throw std::runtime_error("Received unknown type to signal_clicked!");
             }
-            pipelineController->runTask(term->taskInfo->pipelineKey, term->taskInfo->taskKey);
-        } else if (auto pipeline = std::dynamic_pointer_cast<PipelineModel>(active);
-            pipeline != nullptr
-        ) {
-            pipelineController->runPipeline(*pipeline->pipelineKey);
-        } else {
-            throw std::runtime_error("Received unknown type to signal_clicked!");
+        } catch (const std::exception& e) {
+            minilog::error("Failed to spawn pipieline: {}", e.what());
         }
     });
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glibmm/main.h"
 #include "kitsune/api/LuaApi.hpp"
 #include <lua.hpp>
 #include <thread>

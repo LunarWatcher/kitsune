@@ -1,4 +1,5 @@
 #include "TaskRunner.hpp"
+#include "glibmm/main.h"
 
 namespace kitsune {
 
@@ -6,7 +7,14 @@ struct TaskRunnerShutdownSig {
     TaskRunner& runner;
 
     ~TaskRunnerShutdownSig() {
-        runner.signalDone();
+        try {
+            runner.signalDone();
+        } catch (const std::exception& e) {
+            minilog::error(
+                "An exception occurred while sending signal: {}",
+                e.what()
+            );
+        }
     }
 };
 
@@ -18,7 +26,7 @@ TaskRunner::TaskRunner(LuaApi* api, std::vector<Task*>&& taskOrder, const std::v
 {
     ref = luaL_ref(api->getState(), LUA_REGISTRYINDEX);
 
-    for (auto& task : taskOrder) {
+    for (auto& task : this->taskOrder) {
         // Preflight: figure out which tasks need to be killed, and reset the view
         if (
             task->shouldRun()
@@ -34,7 +42,9 @@ TaskRunner::~TaskRunner()
 {
     running.store(false);
     minilog::debug("About to wait for thread join");
-    runControl.join();
+    if (runControl.joinable()) {
+        runControl.join();
+    }
     minilog::debug("Thread join cleared");
 
     luaL_unref(threadState, LUA_REGISTRYINDEX, ref);
@@ -42,21 +52,29 @@ TaskRunner::~TaskRunner()
 
 void TaskRunner::start()
 {
+    minilog::debug("Preparing to start TaskRunner with {} tasks", taskOrder.size());
     runControl = std::thread([this]() {
         TaskRunnerShutdownSig sig(*this);
-        for (auto task : taskOrder) {
-            if (
-                task->shouldRun()
-                || std::find(manuallyRequested.begin(), manuallyRequested.end(), task->getId())
-                != manuallyRequested.end()
-            ) {
-                auto result = task->run(this->threadState, running);
-                if (!result) {
-                    return;
+        try {
+            for (auto task : taskOrder) {
+                if (
+                    task->shouldRun()
+                    || std::find(manuallyRequested.begin(), manuallyRequested.end(), task->getId())
+                    != manuallyRequested.end()
+                ) {
+                    auto result = task->run(this->threadState, running);
+                    if (!result) {
+                        return;
+                    }
                 }
             }
+            this->success = true;
+        } catch (const std::exception& e) {
+            minilog::error(
+                "An error occurred while processing pipeline startup: {}",
+                e.what()
+            );
         }
-        this->success = true;
     });
 }
 

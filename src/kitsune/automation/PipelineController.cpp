@@ -4,7 +4,30 @@
 
 namespace kitsune {
 
-void PipelineController::loadPipelines(LuaApi* api) {
+void PipelineController::startRunner(std::shared_ptr<TaskGraph>& graph, const std::vector<std::string>& tasks)
+{
+    auto runner = graph->start(tasks, this->api);
+    auto pipeline = graph->getName();
+    runner->signal_run_complete().connect(
+        [this, pipeline](bool success) {
+            minilog::info("Pipeline {} exited with {}", pipeline, success ? "success" : "errors");
+
+            std::erase_if(
+                this->runners,
+                [](const auto& p) {
+                    return !p->isRunning();
+                });
+            // TODO (clarification): not a fan of this wording, but it was better than "are still running", which is
+            // more more obviously false. If a pipeline contains long-running tasks, they are guaranteed to still be
+            // running after the initial setup.
+            minilog::info("{} pipelines are still being set up", this->runners.size());
+        });
+    runner->start();
+    runners.push_back(std::move(runner));
+}
+
+void PipelineController::loadPipelines(LuaApi* api)
+{
     this->api = api;
 
     for (auto& lookupDir : conf.pipelineLookupLocations) {
@@ -14,7 +37,7 @@ void PipelineController::loadPipelines(LuaApi* api) {
         }
 
         minilog::debug("Pipelines: loading from {}", lookupDir);
-        
+
         for (const auto& entry : std::filesystem::directory_iterator(lookupDir)) {
             if (entry.is_directory()) {
                 continue;
@@ -27,7 +50,6 @@ void PipelineController::loadPipelines(LuaApi* api) {
             api->run(path);
         }
     }
-
 }
 
 void PipelineController::runPipeline(const std::string& pipeline) {
@@ -41,42 +63,14 @@ void PipelineController::runPipeline(const std::string& pipeline) {
     }
 
     if (!runTaskIds.empty()) {
-        auto runner = graph->start(runTaskIds, this->api);
-        runner->signal_run_complete().connect(
-            [this, pipeline](bool success) {
-                minilog::info(
-                    "Pipeline with ID {} exited with {}",
-                    pipeline,
-                    success ? "success" : "errors"
-                );
-
-                std::erase_if(
-                    this->runners,
-                    [](const auto& p) {
-                        return !p->isRunning();
-                    }
-                );
-                // TODO (clarification): not a fan of this wording, but it was better than "are still running", which is
-                // more more obviously false. If a pipeline contains long-running tasks, they are guaranteed to still be
-                // running after the initial setup.
-                minilog::info(
-                    "{} pipelines are still being set up",
-                    this->runners.size()
-                );
-            }
-        );
-        runner->start();
-        runners.push_back(
-            runner
-        );
+        startRunner(graph, runTaskIds);
     }
 }
 
 void PipelineController::runTask(const std::string& pipeline, const std::string& taskId) {
     auto& graph = this->pipelines.at(pipeline);
-    runners.push_back(
-        graph->start({taskId}, this->api)
-    );
+
+    startRunner(graph, { taskId });
 }
 
 }
