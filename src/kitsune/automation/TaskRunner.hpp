@@ -1,46 +1,47 @@
 #pragma once
 
+#include "glibmm/main.h"
 #include "kitsune/api/LuaApi.hpp"
 #include <lua.hpp>
 #include <thread>
 
 namespace kitsune {
 
-struct TaskRunner {
+class TaskRunner {
+public:
+    using SignalRunComplete = sigc::signal<void(bool)>;
+private:
+    SignalRunComplete runComplete;
+
     LuaApi* api;
     lua_State* threadState;
     int ref;
+    std::atomic<bool> running = true;
+    bool success = false;
+    std::vector<Task*> taskOrder;
+    std::vector<std::string> manuallyRequested;
 
     std::thread runControl;
-    
-    TaskRunner(
-        LuaApi* api,
-        std::vector<Task*>&& taskOrder
-    )
-        : api(api),
-          threadState(lua_newthread(api->getState()))
-    {
-        ref = luaL_ref(api->getState(), LUA_REGISTRYINDEX);
 
-        runControl = std::thread(
-            [this, taskOrder = std::move(taskOrder)]() {
+    void signalDone();
 
-            for (auto task : taskOrder) {
-                task->run(this->threadState);
-            }
-        });
-    }
+public:
+    TaskRunner(LuaApi* api, std::vector<Task*>&& taskOrder, const std::vector<std::string>& manuallyRequested);
 
     TaskRunner(TaskRunner&) = delete;
     TaskRunner(TaskRunner&&) = delete;
 
-    ~TaskRunner() {
-        luaL_unref(threadState, LUA_REGISTRYINDEX, ref);
-        minilog::debug("About to wait for thread join");
-        runControl.join();
-        minilog::debug("Thread join cleared");
+    ~TaskRunner();
+
+    void start();
+
+    SignalRunComplete signal_run_complete() {
+        return runComplete;
     }
 
+    bool isRunning();
+
+    friend struct TaskRunnerShutdownSig;
 };
 
 }

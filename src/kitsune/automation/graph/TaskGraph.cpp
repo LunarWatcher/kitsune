@@ -1,6 +1,5 @@
 #include "TaskGraph.hpp"
 #include "kitsune/automation/TaskRunner.hpp"
-#include "kitsune/gtk/VTEWidget.hpp"
 
 #include <format>
 #include <kitsune/algorithm/DAG.hpp>
@@ -21,7 +20,6 @@ std::expected<bool, std::string> TaskGraph::push(
     //   the deps of the immediate deps, even
     //
     // This is a DAG
-
 
     if (task->id == "") {
         return std::unexpected("Invalid ID!");
@@ -81,68 +79,11 @@ std::shared_ptr<TaskRunner> TaskGraph::start(
         taskList,
         this->tasks
     );
-
     return std::make_shared<TaskRunner>(
         api,
-        std::move(executionOrder)
+        std::move(executionOrder),
+        taskList
     );
-}
-
-void Task::run(lua_State* L) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, this->luaRefKey);
-    minilog::debug("Task::run for id = {}", id);
-    lua_getfield(L, -1, "command");
-
-    if (!lua_isfunction(L, -1)) {
-        minilog::warn("Could not execute {}: no command func", this->id);
-        return;
-    }
-
-    executor.getUData(L);
-    // TODO: inputs
-
-    lua_call(L, 1, 0);
-    lua_pop(L, lua_gettop(L) - 1);
-
-    lua_getfield(L, -1, "liveness");
-
-    if (lua_isfunction(L, -1)) {
-        minilog::debug("id = {} has liveness probe");
-
-        while (true) {
-            // Clear either the liveness probe on the stack used to check if it exists, or the bool value from a
-            // previous iteration of this function
-            lua_pop(L, 1);
-            lua_getfield(L, -1, "liveness");
-            lua_call(L, 0, 1);
-
-            if (lua_toboolean(L, -1)) {
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-    } else {
-        // TODO: This loop can block application shutdown. We need a bool or something to properly terminate (and the
-        // rest of the task graph needs to care about this as well, since a longer-running task can in theory block
-        // shutdown as well as the code currently stands)
-        while (true) {
-            auto state = executor.state->terminalView->state;
-            if (
-                state == VTEState::ExitOk
-                || state == VTEState::ExitError
-                || state == VTEState::LaunchFail
-            ) {
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-    }
-
-    lua_pop(L, lua_gettop(L));
-
-    // TODO: Fix log mesasge
-    minilog::info("{} is failed, completed, or live.", id);
-
 }
 
 }

@@ -48,7 +48,15 @@ public:
         return runStatusChanged;
     }
 
+    bool isRunning() {
+        return state == VTEState::Running;
+    }
+
     void setState(VTEState newState);
+
+    void reset() {
+        setState(VTEState::PreLaunch);
+    }
 };
 
 }

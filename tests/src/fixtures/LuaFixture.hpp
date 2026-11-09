@@ -5,7 +5,7 @@
 #include "kitsune/api/LuaApi.hpp"
 #include "kitsune/automation/PipelineController.hpp"
 #include "kitsune/config/Config.hpp"
-#include "kitsune/gtk/Operators.hpp" // In use by tests, do not remove
+#include <kitsune/gtk/Operators.hpp>
 
 namespace test {
 
