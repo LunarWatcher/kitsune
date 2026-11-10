@@ -110,6 +110,12 @@ void TermList::initTermView() {
             } else {
                 throw std::runtime_error("Received unknown type to signal_activate!");
             }
+
+            if (last < selectionModel->get_n_items()) {
+                this->rootView.get_children().at(last)->remove_css_class("active");
+            }
+            this->rootView.get_children().at(pos)->add_css_class("active");
+            last = pos;
         }
     );
 
@@ -167,7 +173,7 @@ void TermList::initTermView() {
                 minilog::info("Setting up for PipelineModel: {}",
                     ptr->is_expandable());
                 label->set_text(pipelinePtr->displayName);
-                listItem->set_activatable(true);
+                // listItem->set_activatable(true);
                 // TODO: input controller should probably be managed by something else
                 // maybe? Can we Gtk::make_managed a controller?
             } else {

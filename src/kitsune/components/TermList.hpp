@@ -15,6 +15,7 @@
 #include "kitsune/app/modes/ModeController.hpp"
 #include "kitsune/automation/graph/TaskGraph.hpp"
 #include "kitsune/model/TerminalModel.hpp"
+#include <limits>
 #include <unordered_map>
 #include <memory>
 
@@ -43,6 +44,8 @@ private:
 
     Gtk::Box taskBarContainer;
     Gtk::Button runBtn;
+
+    guint last = std::numeric_limits<guint>::max();
 
     void initActionBar();
     void initTermView();
