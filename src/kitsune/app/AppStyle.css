@@ -38,12 +38,6 @@ button label {
     padding: 0.25rem;
 }
 
-/* Temporary for focus debug (will probably turn this into a permanent CSS rule, looks like focus vs. active is a bit
-weird, especially in the listview thing) */
-:focus {
-    border: 4px solid pink;
-}
-
 .dark {
     background-color: var(--kitsune-black);
 }
@@ -93,11 +87,17 @@ listview row:selected {
     background-color: unset;
 }
 
-listview row.active {
+listview row.active, listview row:focus {
     font-weight: bold;
 }
 
-listview row:hover, listview row.active {
+listview row:hover,
+listview treeexpander:focus {
+    background-color: var(--kitsune-purple-active);
+    color: white;
+}
+
+listview row.active {
     background-color: var(--kitsune-purple);
     /* This is currently overridden by gtk.css when the window loses focus, but I'm just going to ignore this for now */
     color: white;

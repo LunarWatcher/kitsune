@@ -1,11 +1,12 @@
 #include "TermList.hpp"
+#include "gdk/gdk.h"
 #include "giomm/liststore.h"
+#include "giomm/simpleactiongroup.h"
 #include "glib.h"
 #include <gtkmm.h>
-#include "gtk/gtk.h"
 #include "gtkmm/enums.h"
+#include "gtkmm/gestureclick.h"
 #include "gtkmm/label.h"
-#include "gtkmm/expander.h"
 #include "gtkmm/signallistitemfactory.h"
 #include "gtkmm/singleselection.h"
 #include "gtkmm/treeexpander.h"
@@ -17,6 +18,51 @@
 #include <cassert>
 
 namespace kitsune {
+
+
+void TermList::bindContextMenu(
+    Gtk::TreeExpander& item,
+    Gtk::ListItem* owningItem
+) {
+    std::shared_ptr<Gio::Menu> menuModel = Gio::Menu::create();
+    menuModel->append("Run", "popup.run");
+
+    auto menu = Gtk::make_managed<Gtk::PopoverMenu>();
+    menu->set_parent(item);
+    menu->set_autohide();
+    menu->set_has_arrow(false);
+    menu->set_menu_model(menuModel);
+
+    auto gestureHandler = Gtk::GestureClick::create();
+    gestureHandler->set_button(GDK_BUTTON_SECONDARY);
+    gestureHandler->signal_released()
+        .connect(
+            [menu](int, double x, double y) {
+                const Gdk::Rectangle rect(x, y, 1, 1);
+                menu->set_pointing_to(rect);
+                menu->popup();
+            }
+        );
+    item.add_controller(gestureHandler);
+
+    std::shared_ptr<Gio::SimpleActionGroup> actionGroup = Gio::SimpleActionGroup::create();
+    actionGroup->add_action("run", [this, listItem = owningItem]() {
+        auto ptr = std::dynamic_pointer_cast<Gtk::TreeListRow>(
+            listItem->get_item()
+        );
+        if (!ptr) {
+            return;
+        }
+
+        auto commonItem = std::dynamic_pointer_cast<PipelineModelCommon>(ptr->get_item());
+        if (commonItem == nullptr) {
+            return;
+        }
+
+        run(commonItem);
+    });
+    item.insert_action_group("popup", actionGroup);
+}
 
 TermList::TermList(
     const std::shared_ptr<ModeController> &modeController,
@@ -36,6 +82,7 @@ TermList::TermList(
 
     this->rootContainer.append(taskBarContainer);
     this->rootContainer.append(termSplitView);
+
 }
 
 void TermList::initActionBar() {
@@ -51,34 +98,36 @@ void TermList::initActionBar() {
             return;
         }
 
-        try {
-            if (auto term = std::dynamic_pointer_cast<TerminalModel>(active);
-                term != nullptr
-               ) {
-                if (!term->taskInfo.has_value()) {
-                    minilog::error("{} is not a managed terminal", term->termName.c_str());
-                    return;
-                }
-                pipelineController->runTask(term->taskInfo->pipelineKey, term->taskInfo->taskKey);
-            } else if (auto pipeline = std::dynamic_pointer_cast<PipelineModel>(active);
-                pipeline != nullptr
-                      ) {
-                pipelineController->runPipeline(*pipeline->pipelineKey);
-            } else {
-                throw std::runtime_error("Received unknown type to signal_clicked!");
-            }
-        } catch (const std::exception& e) {
-            minilog::error("Failed to spawn pipieline: {}", e.what());
-        }
+        run(active);
     });
 
     taskBarContainer.set_css_classes({"pad-medium"});
     taskBarContainer.append(runBtn);
 }
 
-void TermList::initTermView() {
-    // selectionModel->set_can_unselect(false);
+void TermList::run(const std::shared_ptr<PipelineModelCommon>& what) {
+    try {
+        if (auto term = std::dynamic_pointer_cast<TerminalModel>(what);
+            term != nullptr
+           ) {
+            if (!term->taskInfo.has_value()) {
+                minilog::error("{} is not a managed terminal", term->termName.c_str());
+                return;
+            }
+            pipelineController->runTask(term->taskInfo->pipelineKey, term->taskInfo->taskKey);
+        } else if (auto pipeline = std::dynamic_pointer_cast<PipelineModel>(active);
+            pipeline != nullptr
+                  ) {
+            pipelineController->runPipeline(*pipeline->pipelineKey);
+        } else {
+            throw std::runtime_error("Received unknown type to signal_clicked!");
+        }
+    } catch (const std::exception& e) {
+        minilog::error("Failed to spawn pipeline: {}", e.what());
+    }
+}
 
+void TermList::initTermView() {
     rootDataModel = Gio::ListStore<PipelineModel>::create();
     dataModel = Gtk::TreeListModel::create(
         rootDataModel,
@@ -121,8 +170,8 @@ void TermList::initTermView() {
 
     const auto factory = Gtk::SignalListItemFactory::create();
     factory->signal_setup().connect(
-        [this](const Glib::RefPtr<Gtk::ListItem> &ptr) {
-            minilog::info("Setup called");
+        [this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
+            minilog::info("Setup called on {}", (int64_t) ptr.get());
             auto expander = Gtk::make_managed<Gtk::TreeExpander>();
             auto hl = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
             auto statusLabel = Gtk::make_managed<Gtk::Label>();
@@ -130,11 +179,23 @@ void TermList::initTermView() {
             hl->append(*statusLabel);
             hl->append(*nameLabel);
             expander->set_child(*hl);
+
+            // TODO: I tried and failed to use std::weak_ptr here. `expired() == true && lock() == nullptr` in the
+            // callback, and I do not understand why. I assume it's something to the effect of the internal pointer
+            // storage not actually being a shared_ptr? Which would be stupid, but it's the only thing I can get to
+            // vaguely make sense.
+            // I _think_ we could use the `listItem` directly here without cycles, since the `make_managed` pointers are
+            // just new T() + set_managed, which obviously isn't a shared_ptr, but idk, good practice or something?
+            bindContextMenu(
+                *expander,
+                ptr.get()
+            );
+            
             ptr->set_child(*expander);
         });
     factory->signal_bind().connect(
-        [this](const Glib::RefPtr<Gtk::ListItem> &listItem) {
-            minilog::info("Bind called");
+        [this](const Glib::RefPtr<Gtk::ListItem>& listItem) {
+            minilog::info("Bind called on {}", (int64_t) listItem.get());
             auto ptr = std::dynamic_pointer_cast<Gtk::TreeListRow>(listItem->get_item());
             if (!ptr) {
                 return;

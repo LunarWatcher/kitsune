@@ -3,11 +3,13 @@
 #include "giomm/liststore.h"
 #include "gtkmm/box.h"
 #include "gtkmm/button.h"
+#include "gtkmm/listitem.h"
 #include "gtkmm/listview.h"
 #include "gtkmm/paned.h"
+#include "gtkmm/treeexpander.h"
 #include "gtkmm/singleselection.h"
 #include "gtkmm/scrolledwindow.h"
-
+#include <gtkmm/gestureclick.h>
 #include "gtkmm/stack.h"
 #include "gtkmm/stacksidebar.h"
 #include "gtkmm/treelistmodel.h"
@@ -51,6 +53,12 @@ private:
     void initTermView();
 
     std::shared_ptr<PipelineModel> getOrCreatePipeline(const std::string &key);
+    void bindContextMenu(
+        Gtk::TreeExpander& item,
+        Gtk::ListItem* owningItem
+    );
+
+    void run(const std::shared_ptr<PipelineModelCommon>& what);
 public:
     TermList(
         const std::shared_ptr<ModeController>& modeController,
