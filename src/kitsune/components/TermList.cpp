@@ -170,15 +170,15 @@ void TermList::initTermView() {
 
     const auto factory = Gtk::SignalListItemFactory::create();
     factory->signal_setup().connect(
-        [this](const Glib::RefPtr<Gtk::ListItem>& ptr) {
-            minilog::info("Setup called on {}", (int64_t) ptr.get());
+        [this](const Glib::RefPtr<Gtk::ListItem>& listItem) {
+            minilog::info("Setup called on {}", (int64_t) listItem.get());
             auto expander = Gtk::make_managed<Gtk::TreeExpander>();
-            auto hl = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
+            auto contentBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
             auto statusLabel = Gtk::make_managed<Gtk::Label>();
             auto nameLabel = Gtk::make_managed<Gtk::Label>();
-            hl->append(*statusLabel);
-            hl->append(*nameLabel);
-            expander->set_child(*hl);
+            contentBox->append(*statusLabel);
+            contentBox->append(*nameLabel);
+            expander->set_child(*contentBox);
 
             // TODO: I tried and failed to use std::weak_ptr here. `expired() == true && lock() == nullptr` in the
             // callback, and I do not understand why. I assume it's something to the effect of the internal pointer
@@ -188,20 +188,20 @@ void TermList::initTermView() {
             // just new T() + set_managed, which obviously isn't a shared_ptr, but idk, good practice or something?
             bindContextMenu(
                 *expander,
-                ptr.get()
+                listItem.get()
             );
             
-            ptr->set_child(*expander);
+            listItem->set_child(*expander);
         });
     factory->signal_bind().connect(
         [this](const Glib::RefPtr<Gtk::ListItem>& listItem) {
             minilog::info("Bind called on {}", (int64_t) listItem.get());
-            auto ptr = std::dynamic_pointer_cast<Gtk::TreeListRow>(listItem->get_item());
-            if (!ptr) {
+            auto listRow = std::dynamic_pointer_cast<Gtk::TreeListRow>(listItem->get_item());
+            if (!listRow) {
                 return;
             }
 
-            auto commonItem = std::dynamic_pointer_cast<PipelineModelCommon>(ptr->get_item());
+            auto commonItem = std::dynamic_pointer_cast<PipelineModelCommon>(listRow->get_item());
             if (commonItem == nullptr) {
                 throw std::runtime_error(
                     "TermList received row without PipelineModelCommon!");
@@ -214,7 +214,7 @@ void TermList::initTermView() {
                 return;
             }
 
-            expander->set_list_row(ptr);
+            expander->set_list_row(listRow);
             expander->add_controller(
                 commonItem->rowProc
             );
@@ -225,14 +225,14 @@ void TermList::initTermView() {
             label->set_wrap(true);
             label->set_css_classes({ "pad-medium" });
 
-            if (auto termPtr = std::dynamic_pointer_cast<TerminalModel>(ptr->get_item()); termPtr != nullptr) {
+            if (auto termPtr = std::dynamic_pointer_cast<TerminalModel>(listRow->get_item()); termPtr != nullptr) {
                 minilog::info("Setting up for TerminalModel");
                 label->set_text(termPtr->termName);
 
                 termPtr->bind(statusLabel);
-            } else if (auto pipelinePtr = std::dynamic_pointer_cast<PipelineModel>(ptr->get_item()); pipelinePtr != nullptr) {
+            } else if (auto pipelinePtr = std::dynamic_pointer_cast<PipelineModel>(listRow->get_item()); pipelinePtr != nullptr) {
                 minilog::info("Setting up for PipelineModel: {}",
-                    ptr->is_expandable());
+                    listRow->is_expandable());
                 label->set_text(pipelinePtr->displayName);
                 // listItem->set_activatable(true);
                 // TODO: input controller should probably be managed by something else
@@ -287,7 +287,6 @@ void TermList::initTermView() {
     this->listOverflow.set_child(rootView);
     this->termSplitView.set_start_child(listOverflow);
     this->termSplitView.set_end_child(termContainer);
-    
 }
 
 void TermList::addTerminal(const Config& conf) {
