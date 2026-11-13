@@ -7,7 +7,7 @@ namespace kitsune {
 void PipelineController::startRunner(std::shared_ptr<TaskGraph>& graph, const std::vector<std::string>& tasks)
 {
     auto runner = graph->start(tasks, this->api);
-    auto pipeline = graph->getName();
+    auto pipeline = graph->getId();
     runner->signal_run_complete().connect(
         [this, pipeline](bool success) {
             minilog::info("Pipeline {} exited with {}", pipeline, success ? "success" : "errors");

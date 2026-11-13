@@ -313,7 +313,7 @@ Glib::RefPtr<TerminalModel> TermList::addBlankTerminal(
     const std::shared_ptr<Task>& task,
     const TaskGraph* graph
 ) {
-    std::string uniqueId = std::format("{}/{}", graph->getName(), task->getId());
+    std::string uniqueId = std::format("{}/{}", graph->getId(), task->getId());
     minilog::debug("Adding new terminal ({})", uniqueId);
     // To my great annoyance, under GTK4, Glib::RefPtr is literally just an std::shared_ptr
     auto ptr = Glib::make_refptr_for_instance<TerminalModel>(
@@ -322,7 +322,7 @@ Glib::RefPtr<TerminalModel> TermList::addBlankTerminal(
             conf,
             modeController,
             TaskInfo {
-                graph->getName(),
+                graph->getId(),
                 task->getId()
             }
         )
@@ -332,20 +332,23 @@ Glib::RefPtr<TerminalModel> TermList::addBlankTerminal(
         uniqueId
     );
 
-    auto pipeline = getOrCreatePipeline(graph->getName());
+    auto pipeline = getOrCreatePipeline(graph->getId(), graph->getDisplayName());
     pipeline->model->append(ptr);
     return ptr;
 }
 
-std::shared_ptr<PipelineModel> TermList::getOrCreatePipeline(const std::string &key) {
-    if (auto it = activePipelines.find(key); it != activePipelines.end()) {
+std::shared_ptr<PipelineModel> TermList::getOrCreatePipeline(
+    const std::string& id,
+    const std::string& displayName
+) {
+    if (auto it = activePipelines.find(id); it != activePipelines.end()) {
         return it->second;
     }
 
     auto pipeline = std::make_shared<PipelineModel>(this->modeController);
-    pipeline->displayName = key;
-    pipeline->pipelineKey = key;
-    activePipelines[key] = pipeline;
+    pipeline->displayName = displayName;
+    pipeline->pipelineKey = id;
+    activePipelines[id] = pipeline;
     rootDataModel->append(pipeline);
     return pipeline;
 }

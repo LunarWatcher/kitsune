@@ -52,7 +52,10 @@ private:
     void initActionBar();
     void initTermView();
 
-    std::shared_ptr<PipelineModel> getOrCreatePipeline(const std::string &key);
+    std::shared_ptr<PipelineModel> getOrCreatePipeline(
+        const std::string& key,
+        const std::string& displayName
+    );
     void bindContextMenu(
         Gtk::TreeExpander& item,
         Gtk::ListItem* owningItem

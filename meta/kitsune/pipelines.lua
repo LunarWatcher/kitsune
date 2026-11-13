@@ -74,7 +74,8 @@ function Pipeline:task(id, params) end
 pipelines = {}
 
 --- @param name string The name of the pipeline
+--- @param id string The ID referenced in commands and similar
 --- @return Pipeline
-function pipelines.new(name) end
+function pipelines.new(name, id) end
 
 return pipelines

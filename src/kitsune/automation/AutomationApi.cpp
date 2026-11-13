@@ -133,11 +133,19 @@ int AutomationApi::createTask(lua_State* L) {
 
 int AutomationApi::newPipeline(lua_State* L) {
     auto name = util::getStringArg<std::string>(L, 1);
+    auto id = util::getStringArg<std::string>(L, 2);
 
     auto* api = LuaRegistry::WithRegistry(L).getApi();
+    auto& pipelines = api->getPipelineController()->getPipelines();
+    if (pipelines.contains(id)) {
+        return luaL_argerror(L, 2, "Pipeline IDs must be unique");
+    }
 
-    auto pipeline = std::make_shared<TaskGraph>(name);
-    api->getPipelineController()->getPipelines()[name] = pipeline;
+    auto pipeline = std::make_shared<TaskGraph>(
+        id,
+        name
+    );
+    pipelines[id] = pipeline;
 
     auto** pipelineUdata = (TaskGraph**) lua_newuserdata(L, sizeof(TaskGraph**));
     luaL_setmetatable(L, UDataPipeline);

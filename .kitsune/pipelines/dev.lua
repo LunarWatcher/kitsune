@@ -1,7 +1,8 @@
 local pipelines = require("kitsune.pipelines");
 
 local pipeline = pipelines.new(
-    "Dev pipeline"
+    "Dev pipeline",
+    "dev"
 )
 
 pipeline:task(

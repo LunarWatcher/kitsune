@@ -18,9 +18,13 @@ class TaskRunner;
 class TaskGraph {
 private:
     std::unordered_map<std::string, std::shared_ptr<Task>> tasks;
+    const std::string id;
     const std::string name;
 public:
-    TaskGraph(const std::string& name) : name(name) {}
+    TaskGraph(
+        const std::string& id,
+        const std::string& name
+    ) : id(id), name(name) {}
 
     std::expected<bool, std::string> push(
         const std::shared_ptr<Task>& task,
@@ -32,7 +36,8 @@ public:
         LuaApi* api
     );
 
-    const std::string& getName() const { return name; }
+    const std::string& getId() const { return id; }
+    const std::string& getDisplayName() const { return name; }
     const decltype(tasks)& getTasks() const { return tasks; }
 };
 
