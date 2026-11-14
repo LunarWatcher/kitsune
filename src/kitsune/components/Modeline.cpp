@@ -1,8 +1,11 @@
 #include "Modeline.hpp"
 #include "gdkmm/enums.h"
+#include "glibmm/main.h"
 #include "gtkmm/applicationwindow.h"
 #include "gtkmm/enums.h"
 #include "kitsune/app/modes/ModalInputProcessor.hpp"
+#include "kitsune/components/commands/CommandParse.hpp"
+#include "minilog/minilog.hpp"
 
 namespace kitsune {
 
@@ -20,8 +23,10 @@ namespace kitsune {
 
 Modeline::Modeline(
     const std::shared_ptr<ModeController>& modeController,
-    Gtk::ApplicationWindow* window
-) : modeController(modeController),
+    Gtk::ApplicationWindow* window,
+    const std::shared_ptr<CommandDispatcher>& dispatcher
+) : dispatcher(dispatcher),
+    modeController(modeController),
     container(Gtk::Orientation::VERTICAL, 0),
     modelineContainer(Gtk::Orientation::HORIZONTAL, 0),
     commandInputContainer(Gtk::Orientation::HORIZONTAL, 0),
@@ -37,8 +42,12 @@ Modeline::Modeline(
     initModeline();
     initCommandInput();
 
+    errorLabel.set_name("modeline-error");
+    errorLabel.set_halign(Gtk::Align::START);
+
     container.append(modelineContainer);
     container.append(commandInputContainer);
+    container.append(errorLabel);
 
     container.set_hexpand(true);
     container.set_vexpand(false);
@@ -86,14 +95,30 @@ void Modeline::initCommandInput() {
         },
         true
     );
-    
+
     commandInput.add_controller(commandInputProcessor);
     commandInput.set_sensitive(false);
     commandInput.signal_activate().connect([this]() {
         // activate means enter is pressed (in Gtk::Text anyway)
         auto text = commandInput.get_text();
+        minilog::debug("Command invoked: {}", text);
 
-        this->modeController->setMode(Mode::Normal);
+        const auto commandResult = CommandParse::parse(text);
+
+        if (!commandResult.has_value()) {
+            setError(commandResult.error());
+        } else {
+            auto dispatchResult = dispatcher->invoke(
+                commandResult->command,
+                commandResult->args
+            );
+
+            if (dispatchResult.has_value()) {
+                setError(dispatchResult->what());
+            } else {
+                this->modeController->setMode(Mode::Normal);
+            }
+        }
     });
     commandInput.set_expand(true);
 
@@ -121,7 +146,14 @@ void Modeline::initCommandInput() {
             commandLabel.set_text("");
             commandInput.set_text("");
         }
+        errorLabel.set_text("");
+        this->errorLabel.set_visible(false);
     });
+}
+
+void Modeline::setError(const std::string& errorMessage) {
+    this->errorLabel.set_text(errorMessage);
+    this->errorLabel.set_visible(true);
 }
 
 }

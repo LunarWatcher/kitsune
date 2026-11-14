@@ -39,6 +39,9 @@ public:
     const std::string& getId() const { return id; }
     const std::string& getDisplayName() const { return name; }
     const decltype(tasks)& getTasks() const { return tasks; }
+    bool containsTask(const std::string& taskId) {
+        return tasks.contains(taskId);
+    }
 };
 
 }

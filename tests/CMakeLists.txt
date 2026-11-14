@@ -1,7 +1,9 @@
 add_executable(tests
     src/Main.cpp
     src/fixtures/LuaFixture.cpp
-    
+
+    src/components/commands/CommandParseTests.cpp
+
     src/lua/ConfigTests.cpp
 )
 

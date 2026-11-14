@@ -45,6 +45,11 @@ button label {
     color: var(--kitsune-white);
 }
 
+#modeline-error {
+    color: var(--kitsune-error);
+    font-weight: bold;
+}
+
 .modeline-root .primary {
     background-color: var(--kitsune-purple);
 }

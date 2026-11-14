@@ -18,6 +18,9 @@ add_library(kitsunesrc STATIC
     kitsune/components/TermList.cpp
     kitsune/components/Modeline.cpp
 
+    kitsune/components/commands/CommandDispatcher.cpp
+    kitsune/components/commands/CommandParse.cpp
+
     kitsune/config/Config.cpp
     kitsune/config/ConfigApi.cpp
 

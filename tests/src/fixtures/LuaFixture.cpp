@@ -2,6 +2,7 @@
 
 #include "catch2/catch_test_macros.hpp"
 #include "kitsune/automation/PipelineController.hpp"
+#include "kitsune/components/commands/CommandDispatcher.hpp"
 
 #include <fstream>
 
@@ -13,7 +14,8 @@ LuaFixture::LuaFixture()
                 .configRoot = "./test-data/config"
             }
         }),
-      pipelineController(conf),
+      dispatcher(new kitsune::CommandDispatcher),
+      pipelineController(conf, dispatcher),
       dir(conf.envConfig.configRoot, true),
       api(
           // TODO: termList = nullptr is going to cause problems for at least a few of the automation APIs, but I'm not

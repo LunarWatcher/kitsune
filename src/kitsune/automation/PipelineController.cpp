@@ -26,6 +26,44 @@ void PipelineController::startRunner(std::shared_ptr<TaskGraph>& graph, const st
     runners.push_back(std::move(runner));
 }
 
+std::optional<Error> PipelineController::dispatchRun(const std::vector<std::string>& args) {
+    if (args.size() != 2) {
+        return Error {
+            "Expected precisely 2 arguments: pipelineId commandId"
+        };
+    }
+
+    auto pipeline = this->pipelines.find(args.at(0));
+    if (pipeline == this->pipelines.end()) {
+        return Error {
+            "Failed to find pipeline with ID " + args.at(0)
+        };
+    }
+
+    if (!pipeline->second->containsTask(args.at(1))) {
+        return Error {
+            "Failed to find task with ID " + args.at(1)
+        };
+    }
+
+    startRunner(pipeline->second, { args.at(1) });
+
+    return std::nullopt;
+}
+
+void PipelineController::initCommands()
+{
+    dispatcher->registerCommand(
+        "run",
+        std::bind(&PipelineController::dispatchRun, this, std::placeholders::_1)
+    );
+}
+
+PipelineController::PipelineController(Config& conf, const std::shared_ptr<CommandDispatcher>& dispatcher)
+    : dispatcher(dispatcher), conf(conf)
+{
+    initCommands();
+}
 void PipelineController::loadPipelines(LuaApi* api)
 {
     this->api = api;

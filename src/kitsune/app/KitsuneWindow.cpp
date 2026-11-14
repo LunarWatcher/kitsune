@@ -14,9 +14,10 @@ MainWindow::MainWindow(
     fallbackInputProcessor(
         new ModalInputProcessor(modeController, ModalInputType::Window)
     ),
-    pipelineController(conf),
+    commandDispatcher(std::make_shared<CommandDispatcher>()),
+    pipelineController(conf, commandDispatcher),
     terminals(modeController, &pipelineController),
-    modeline(modeController, this),
+    modeline(modeController, this, commandDispatcher),
     root(Gtk::Orientation::VERTICAL, 0),
     api(
         &terminals, &conf, &pipelineController

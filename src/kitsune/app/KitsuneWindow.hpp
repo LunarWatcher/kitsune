@@ -9,6 +9,7 @@
 #include "kitsune/automation/PipelineController.hpp"
 #include "kitsune/components/Modeline.hpp"
 #include "kitsune/components/TermList.hpp"
+#include "kitsune/components/commands/CommandDispatcher.hpp"
 #include "kitsune/config/Config.hpp"
 
 namespace kitsune {
@@ -19,6 +20,8 @@ private:
 
     std::shared_ptr<ModeController> modeController;
     std::shared_ptr<ModalInputProcessor> fallbackInputProcessor;
+
+    std::shared_ptr<CommandDispatcher> commandDispatcher;
 
     PipelineController pipelineController;
     TermList terminals;
